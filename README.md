@@ -18,7 +18,32 @@ Hệ thống quản trị và vận hành nội bộ dành cho chuỗi bán lẻ
 
 ---
 
-## 2. Cấu trúc thư mục mã nguồn
+## 2. Bảng Màu Chuẩn Của Hệ Thống (Design System & Color Palette)
+
+Toàn bộ portal nội bộ được cấu hình tập trung qua Ant Design `<ConfigProvider>`:
+
+| Tên màu | Mã HEX | Giá trị RGB | Ứng dụng trong giao diện nội bộ |
+| :--- | :---: | :---: | :--- |
+| **Primary Dark** | `#086288` | `rgb(8, 98, 136)` | Sidebar nền, Nút xác nhận chính, Tiêu đề phân hệ, Tag SKU nổi bật |
+| **Ocean Blue** | `#4D8DBA` | `rgb(77, 141, 186)` | Màu active item Sidebar menu, Viền nút phụ, Icon điều hướng |
+| **Sky Accent** | `#97D7FF` | `rgb(151, 215, 255)` | Đường viền ngăn cách nhẹ, Tag thông số khúc xạ, Nền user badge |
+| **Warm Cream** | `#FFEFC4` | `rgb(255, 239, 196)` | Tag mã SKU sản phẩm, Card Mắt trái (OS), Tag trạng thái chờ xử lý |
+
+> **Cấu hình Ant Design Theme (`ConfigProvider`):**
+> ```javascript
+> theme={{
+>   token: {
+>     colorPrimary: '#086288',
+>     colorLink: '#4D8DBA',
+>     colorSuccess: '#086288',
+>     borderRadius: 8,
+>   }
+> }}
+> ```
+
+---
+
+## 3. Cấu trúc thư mục mã nguồn
 
 ```text
 internal-portal/
