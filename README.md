@@ -1,137 +1,51 @@
-# GlassStore Internal Portal - POS, Optometry & Eyewear Lab Management
+# 🏬 GlassStore Internal Portal (Hệ Thống Quản Trị Nội Bộ & POS Bán Hàng)
 
-Hệ thống quản trị và vận hành nội bộ dành cho chuỗi bán lẻ mắt kính, xây dựng trên nền tảng **React 18**, **Vite 5**, **Ant Design 5**, phục vụ nhân viên bán hàng tại quầy (POS), kỹ thuật viên đo mắt, kỹ thuật viên mài lắp kính (Lab) và quản lý cửa hàng.
-
----
-
-## 1. Công nghệ sử dụng (Tech Stack)
-
-- **Ngôn ngữ:** JavaScript / JSX (ES6+)
-- **Framework UI:** React 18.3
-- **Build Tool:** Vite 5.2
-- **Thư viện Giao diện (UI Kit):** Ant Design 5.18 (`antd`) & `@ant-design/icons`
-- **In hóa đơn & Phiếu đo:** `react-to-print` (In trực tiếp hóa đơn K80 và phiếu đo A5)
-- **Biểu đồ thống kê:** `recharts` 2.12
-- **Xử lý dữ liệu bảng & Xuất Excel:** `xlsx` (SheetJS)
-- **Routing:** React Router DOM 6.23
-- **HTTP Client:** Axios 1.7 (Giao tiếp với API Gateway)
+Cổng thông tin vận hành nội bộ dành cho Nhân viên Bán hàng tại quầy (POS), Kỹ thuật viên Khúc xạ (Optometry), Kỹ thuật viên Xưởng kính Lab và Quản lý Kho chi nhánh.
 
 ---
 
-## 2. Bảng Màu Chuẩn Của Hệ Thống (Design System & Color Palette)
+## 🎨 Bảng Màu Chuẩn (Official Palette)
 
-Toàn bộ portal nội bộ được cấu hình tập trung qua Ant Design `<ConfigProvider>`:
+Tất cả thành viên trong nhóm code UI portal phải tuân thủ bảng màu chính thức:
 
-| Tên màu | Mã HEX | Giá trị RGB | Ứng dụng trong giao diện nội bộ |
-| :--- | :---: | :---: | :--- |
-| **Primary Dark** | `#086288` | `rgb(8, 98, 136)` | Sidebar nền, Nút xác nhận chính, Tiêu đề phân hệ, Tag SKU nổi bật |
-| **Ocean Blue** | `#4D8DBA` | `rgb(77, 141, 186)` | Màu active item Sidebar menu, Viền nút phụ, Icon điều hướng |
-| **Sky Accent** | `#97D7FF` | `rgb(151, 215, 255)` | Đường viền ngăn cách nhẹ, Tag thông số khúc xạ, Nền user badge |
-| **Warm Cream** | `#FFEFC4` | `rgb(255, 239, 196)` | Tag mã SKU sản phẩm, Card Mắt trái (OS), Tag trạng thái chờ xử lý |
+| Tên Màu | Mã HEX | RGB | Ứng Dụng |
+| :--- | :--- | :--- | :--- |
+| **Primary Dark** | `#086288` | `rgb(8, 98, 136)` | Sidebar nền, Nút hành động chính, Header text, Tổng tiền bill |
+| **Ocean Blue** | `#4D8DBA` | `rgb(77, 141, 186)` | Menu mục đang chọn (Active), Viền nút In bill |
+| **Sky Accent** | `#97D7FF` | `rgb(151, 215, 255)` | Đường viền ngăn cách, Card Mắt Phải (OD) |
+| **Warm Cream** | `#FFEFC4` | `rgb(255, 239, 196)` | Tag SKU sản phẩm, Badge chi nhánh, Card Mắt Trái (OS) |
 
-> **Cấu hình Ant Design Theme (`ConfigProvider`):**
-> ```javascript
-> theme={{
->   token: {
->     colorPrimary: '#086288',
->     colorLink: '#4D8DBA',
->     colorSuccess: '#086288',
->     borderRadius: 8,
->   }
-> }}
-> ```
+> Xem chi tiết tại [DESIGN_PALETTE.md](./DESIGN_PALETTE.md).
 
 ---
 
-## 3. Cấu trúc thư mục mã nguồn
+## 🚀 Khởi Chạy Dự Án
 
-```text
-internal-portal/
-├── public/                 # Static assets
-├── src/
-│   ├── api/                # Axios instance & Interceptor gắn JWT Token
-│   ├── components/         # Common UI Components (Sidebar, Navbar, PrintTemplates)
-│   ├── layouts/            # DashboardLayout (Sidebar phân quyền theo Role)
-│   ├── pages/              # Các phân hệ nghiệp vụ nội bộ
-│   │   ├── Login/          # Đăng nhập dành cho nhân viên / Admin
-│   │   ├── Pos/            # Màn hình bán lẻ POS tại quầy, quét Barcode, in bill K80
-│   │   ├── Optometry/      # Phòng đo mắt, nhập chỉ số OD/OS, in phiếu đo thị lực
-│   │   ├── Lab/            # Xưởng gia công kính, cập nhật tiến độ mài tròng, QC
-│   │   ├── Products/       # Quản lý danh mục, sản phẩm, SKU và tồn kho cửa hàng
-│   │   ├── Orders/         # Quản lý đơn hàng toàn hệ thống, xử lý bảo hành
-│   │   └── Dashboard/      # Biểu đồ doanh thu ngày/tháng, tỷ lệ kênh, xuất file Excel
-│   ├── routes/             # Cấu hình PrivateRoutes & Phân quyền RBAC
-│   ├── App.jsx             # Root Component cấu hình ConfigProvider Ant Design
-│   └── main.jsx            # Entry point
-├── index.html
-├── package.json
-└── vite.config.js
-```
-
----
-
-## 3. Yêu cầu môi trường (Prerequisites)
-
-- **Node.js:** 18.x hoặc 20.x trở lên
-- **NPM:** 9.x hoặc 10.x trở lên
-
----
-
-## 4. Cấu hình biến môi trường
-
-Tạo file `.env` tại thư mục gốc:
-
-| Tên biến | Giá trị mặc định | Mô tả |
-| :--- | :--- | :--- |
-| `VITE_API_BASE_URL` | `http://localhost:8080` | Địa chỉ Gateway Backend |
-
----
-
-## 5. Hướng dẫn khởi chạy (Getting Started)
-
-### Cài đặt dependencies:
 ```bash
+# 1. Cài đặt thư viện
 npm install
-```
 
-### Khởi chạy môi trường phát triển (Dev Mode):
-```bash
+# 2. Chạy môi trường phát triển (Port 5174)
 npm run dev
 ```
-Giao diện mặc định chạy tại địa chỉ: `http://localhost:5173` (hoặc `5174`)
 
-### Đóng gói ứng dụng (Production Build):
-```bash
-npm run build
-```
-Mã nguồn sau khi tối ưu được sinh ra tại thư mục: `dist/`
+Truy cập: `http://localhost:5174`
 
 ---
 
-## 6. Phân hệ nghiệp vụ & Màn hình chính
+## 📋 Các Phân Hệ Chức Năng (Modules)
 
-| Đường dẫn (Route) | Phân hệ nghiệp vụ | Vai trò sử dụng | Chức năng chi tiết theo SRS |
-| :--- | :--- | :--- | :--- |
-| `/pos` | **Bán hàng tại quầy (POS)** | Thu ngân, Sales Staff | Quét barcode sản phẩm, chọn khách hàng qua SĐT, áp voucher, thanh toán tiền mặt/VietQR, in hóa đơn nhiệt K80 |
-| `/optometry` | **Phòng đo khúc xạ** | KTV Đo mắt | Form chuyên dụng nhập thông số khúc xạ $OD$ (Mắt phải) và $OS$ (Mắt trái): SPH, CYL, AXIS, ADD, PD; in phiếu đo A5 |
-| `/lab` | **Xưởng gia công mài lắp** | KTV Xưởng Lab | Tiếp nhận đơn kính thuốc từ POS/Web, cập nhật trạng thái mài lắp: `Chờ mài` $\rightarrow$ `Đang cắt mài` $\rightarrow$ `Kiểm tra QC` $\rightarrow$ `Sẵn sàng bàn giao` |
-| `/admin/products`| **Quản lý sản phẩm & Kho** | Quản lý, Admin | CRUD gọng kính, tròng kính; theo dõi tồn kho khả dụng tại từng chi nhánh |
-| `/admin/orders` | **Đơn hàng & Bảo hành** | Quản lý, CSKH | Tra cứu đơn hàng, tiếp nhận bảo hành gọng/tròng theo số điện thoại |
-| `/admin/dashboard`| **Báo cáo kinh doanh** | Quản lý, Chủ cửa hàng | Biểu đồ doanh thu tuần/tháng bằng `recharts`, thống kê đơn Online vs Offline, xuất dữ liệu ra file `.xlsx` |
-
----
-
-## 7. Quy tắc Git & Phân nhánh (Git Workflow)
-
-1. Nhánh `main`: Dành riêng cho bản phát hành chính thức, không commit trực tiếp.
-2. Nhánh `dev`: Nhánh làm việc chung hàng ngày.
-   ```bash
-   git checkout dev
-   git pull origin dev
-   git checkout -b feature/<ten-tinh-nang>
-   ```
-3. Commit thông điệp chuẩn mực:
-   - `feat(pos): integrate react-to-print for receipt invoice`
-   - `feat(optometry): add OD/OS measurement validation form`
-   - `feat(lab): add status transition for eyewear cutting and QC check`
-4. Push lên GitHub và tạo Pull Request merge vào nhánh `dev`.
+1. **Bán Hàng POS Quầy (`pos`)**:
+   - Quét mã vạch Barcode / nhập SKU nhanh
+   - Tự động cộng dồn số lượng, tính tổng tiền hàng, áp mã Voucher
+   - Nút In hóa đơn nhiệt K80 và Xác nhận thanh toán VietQR
+2. **Phòng Đo Khám Khúc Xạ (`optometry`)**:
+   - Nhập thông số chuẩn nhãn khoa riêng biệt: Mắt Phải (OD) & Mắt Trái (OS)
+   - Lưu các chỉ số SPH, CYL, AXIS, ADD, PD (khoảng cách đồng tử)
+   - In phiếu khám khúc xạ chuẩn A5
+3. **Xưởng Mài Lắp Kính & QC (`lab`)**:
+   - Quản lý quy trình gia công từ đơn kính thuốc
+   - Chuyển trạng thái quy trình: Chờ xử lý -> Đang mài tròng -> Đạt kiểm định QC -> Sẵn sàng giao
+4. **Quản Trị & Tồn Kho (`dashboard`)**:
+   - Báo cáo doanh thu ca làm việc, số đơn bán ra, số ca đo mắt
+   - Bảng theo dõi tồn kho khả dụng của chi nhánh
