@@ -1,0 +1,589 @@
+/* ============================================================
+   OptiVision Enterprise Authentication Portal Stylesheet
+   Pixel-perfect match to the official OptiVision internal portal
+   Design standard: ISO/IEC/IEEE 29148:2018 Optical Specification
+   ============================================================ */
+
+.optivision-auth-wrapper {
+  min-height: 100vh;
+  width: 100vw;
+  background: #f6f9fc;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1e293b;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* ---------------- Top Navbar ---------------- */
+.optivision-auth-header {
+  height: 72px;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.optivision-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.optivision-eye-logo {
+  width: 38px;
+  height: 38px;
+  background: #074d75;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(7, 77, 117, 0.25);
+  flex-shrink: 0;
+}
+
+.optivision-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.optivision-logo-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0c3656;
+  letter-spacing: -0.3px;
+}
+
+.optivision-logo-subtitle {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #086288;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.optivision-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.optivision-helpdesk-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #eaf3fb;
+  border: 1px solid #cce2f4;
+  padding: 7px 18px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #086288;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.optivision-helpdesk-pill:hover {
+  background: #dfeefb;
+  border-color: #97D7FF;
+}
+
+.optivision-user-badge-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #074d75;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(7, 77, 117, 0.2);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.optivision-user-badge-btn:hover {
+  transform: scale(1.05);
+}
+
+/* ---------------- Main Dual-Pane Section ---------------- */
+.optivision-auth-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px 28px;
+  box-sizing: border-box;
+}
+
+.optivision-auth-container {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  align-items: stretch;
+  gap: 26px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ---------------- Left Pane: Info & Modules ---------------- */
+.optivision-left-pane {
+  flex: 0 0 390px;
+  width: 390px;
+  background: #eaf4fb;
+  border-radius: 24px;
+  border: 1px solid #d4e7f6;
+  padding: 32px 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  box-shadow: 0 8px 24px rgba(8, 98, 136, 0.04);
+}
+
+.optivision-retail-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #074d75;
+  color: #ffffff;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  width: fit-content;
+}
+
+.optivision-portal-heading {
+  font-size: 27px;
+  font-weight: 800;
+  color: #074d75;
+  margin: 16px 0 8px 0;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+}
+
+.optivision-portal-desc {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.optivision-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.optivision-feature-item {
+  background: #ffffff;
+  border: 1px solid #e2edf6;
+  border-radius: 14px;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 6px rgba(8, 98, 136, 0.03);
+  transition: all 0.2s ease;
+}
+
+.optivision-feature-item:hover {
+  transform: translateY(-1px);
+  border-color: #97D7FF;
+  box-shadow: 0 4px 12px rgba(8, 98, 136, 0.08);
+}
+
+.optivision-feature-icon-box {
+  width: 38px;
+  height: 38px;
+  background: #eaf4fb;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #086288;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.optivision-feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.optivision-feature-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.optivision-feature-sub {
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.optivision-security-notice {
+  background: #fef8eb;
+  border: 1px solid #fedfae;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 26px;
+  color: #854d0e;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.optivision-security-notice-icon {
+  font-size: 15px;
+  margin-top: 2px;
+  color: #b45309;
+  flex-shrink: 0;
+}
+
+/* ---------------- Right Pane: Login Form ---------------- */
+.optivision-right-pane {
+  flex: 0 0 564px;
+  width: 564px;
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e6eff7;
+  padding: 34px 38px;
+  box-shadow: 0 10px 35px rgba(12, 74, 110, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.optivision-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.optivision-form-title-group h2 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 800;
+  color: #074d75;
+  letter-spacing: -0.4px;
+}
+
+.optivision-form-title-group p {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.optivision-rbac-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Quick Role Switcher Bar */
+.optivision-role-section {
+  margin-bottom: 16px;
+}
+
+.optivision-role-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.optivision-role-switch-bar {
+  display: flex;
+  background: #edf4fa;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.optivision-role-tab {
+  flex: 1;
+  text-align: center;
+  padding: 7px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.optivision-role-tab:hover {
+  color: #074d75;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.optivision-role-tab.active {
+  background: #074d75;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(7, 77, 117, 0.25);
+}
+
+/* Form Fields */
+.optivision-field-group {
+  margin-bottom: 12px;
+}
+
+.optivision-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.optivision-field-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.optivision-field-label .required-star {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+.optivision-field-hint {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.optivision-sha-badge {
+  color: #086288;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Custom styled inputs */
+.optivision-input {
+  width: 100%;
+  height: 42px;
+  background: #f1f6fb !important;
+  border: 1px solid #cfe0ef !important;
+  border-radius: 9px !important;
+  font-size: 13px !important;
+  color: #0f172a !important;
+  transition: all 0.2s ease !important;
+  box-sizing: border-box;
+}
+
+.optivision-input:hover {
+  border-color: #97D7FF !important;
+}
+
+.optivision-input:focus,
+.optivision-input.ant-input-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: #086288 !important;
+  box-shadow: 0 0 0 2px rgba(8, 98, 136, 0.15) !important;
+  background: #ffffff !important;
+}
+
+.optivision-select .ant-select-selector {
+  background: #f1f6fb !important;
+  border: 1px solid #cfe0ef !important;
+  border-radius: 9px !important;
+  height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 13px !important;
+}
+
+/* 2FA OTP Boxes */
+.optivision-otp-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 5px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.optivision-otp-box {
+  flex: 1;
+  max-width: 56px;
+  height: 46px;
+  background: #f1f6fb;
+  border: 1px solid #cfe0ef;
+  border-radius: 9px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: #074d75;
+  transition: all 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.optivision-otp-box:focus {
+  background: #ffffff;
+  border-color: #074d75;
+  box-shadow: 0 0 0 2px rgba(7, 77, 117, 0.18);
+}
+
+.optivision-otp-subtext {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 5px;
+  line-height: 1.35;
+}
+
+/* Submit Action Button */
+.optivision-submit-btn {
+  width: 100%;
+  height: 46px;
+  background: #074d75 !important;
+  border: none !important;
+  border-radius: 9px !important;
+  color: #ffffff !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(7, 77, 117, 0.28) !important;
+  margin-top: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease !important;
+}
+
+.optivision-submit-btn:hover {
+  background: #053b5c !important;
+  transform: translateY(-1px);
+}
+
+/* Secondary Actions */
+.optivision-form-links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.optivision-link {
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.optivision-link:hover {
+  color: #086288;
+}
+
+.optivision-tab-mode-btn {
+  background: none;
+  border: none;
+  color: #086288;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+}
+
+.optivision-tab-mode-btn:hover {
+  text-decoration: underline;
+}
+
+/* ---------------- Bottom System Footer ---------------- */
+.optivision-auth-footer {
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #e2edf6;
+  font-size: 11.5px;
+  color: #64748b;
+  background: transparent;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.optivision-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.optivision-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.optivision-footer-link {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  cursor: pointer;
+}
+
+.optivision-footer-link:hover {
+  color: #086288;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .optivision-auth-header,
+  .optivision-auth-footer {
+    padding: 12px 20px;
+  }
+  .optivision-auth-container {
+    flex-direction: column;
+    max-width: 580px;
+  }
+  .optivision-left-pane,
+  .optivision-right-pane {
+    flex: none;
+    width: 100%;
+  }
+  .optivision-right-pane {
+    padding: 28px 24px;
+  }
+}

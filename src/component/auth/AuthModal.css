@@ -1,0 +1,925 @@
+/* ============================================================
+   OptiVision Enterprise Internal Operations Portal Stylesheet
+   Chuyên biệt dành riêng cho Nhân Sự & Quản Trị Chuỗi Kính Mắt
+   Chuẩn ISO/IEC/IEEE 29148:2018 Optical Specification
+   ============================================================ */
+
+/* ---------------- Background Enterprise Portal ---------------- */
+.optivision-portal-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  background: #092136;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  color: #f1f5f9;
+}
+
+/* Background image & gradient overlay */
+.optivision-portal-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 25%, #0d4268 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, #073150 0%, transparent 50%),
+    linear-gradient(180deg, #071e31 0%, #051421 100%);
+  z-index: 1;
+}
+
+.optivision-portal-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: filter 0.3s ease;
+}
+
+.optivision-portal-content.is-blurred {
+  filter: blur(8px) brightness(0.8);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Top Enterprise Navbar */
+.optivision-portal-header {
+  height: 72px;
+  padding: 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(151, 215, 255, 0.12);
+  background: rgba(7, 26, 43, 0.82);
+  backdrop-filter: blur(14px);
+}
+
+.optivision-portal-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.optivision-portal-logo-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #086288;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 16px rgba(8, 98, 136, 0.5);
+  border: 1px solid rgba(151, 215, 255, 0.4);
+}
+
+.optivision-portal-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.optivision-portal-logo-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.optivision-portal-logo-sub {
+  font-size: 10px;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+/* Operations Modules Menu in Header */
+.optivision-ops-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.optivision-ops-item {
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.optivision-ops-item:hover,
+.optivision-ops-item.active {
+  color: #ffffff;
+  background: rgba(56, 189, 248, 0.12);
+}
+
+/* Header Right Actions */
+.optivision-portal-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.optivision-helpdesk-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(14, 58, 88, 0.5);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7dd3fc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.optivision-helpdesk-pill-btn:hover {
+  background: rgba(14, 58, 88, 0.8);
+  border-color: #38bdf8;
+}
+
+.optivision-btn-login-trigger {
+  background: #086288;
+  color: #ffffff;
+  border: 1px solid #38bdf8;
+  border-radius: 20px;
+  padding: 8px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(8, 98, 136, 0.45);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optivision-btn-login-trigger:hover {
+  background: #0a7cae;
+  transform: translateY(-1px);
+}
+
+/* Enterprise Hero Dashboard Preview */
+.optivision-portal-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px 50px;
+  text-align: center;
+}
+
+.optivision-portal-hero-inner {
+  max-width: 920px;
+}
+
+.optivision-enterprise-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.optivision-portal-hero-title {
+  font-size: 42px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.optivision-portal-hero-title span {
+  background: linear-gradient(135deg, #38bdf8 0%, #7dd3fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.optivision-portal-hero-desc {
+  font-size: 15px;
+  color: #94a3b8;
+  line-height: 1.6;
+  max-width: 760px;
+  margin: 0 auto 30px;
+}
+
+/* Operational Metrics Cards (4 Columns) */
+.optivision-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  max-width: 880px;
+  margin: 0 auto 36px;
+}
+
+.optivision-metric-card {
+  background: rgba(13, 44, 70, 0.65);
+  border: 1px solid rgba(151, 215, 255, 0.18);
+  border-radius: 14px;
+  padding: 16px 18px;
+  text-align: left;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.optivision-metric-num {
+  font-size: 24px;
+  font-weight: 900;
+  color: #38bdf8;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.optivision-metric-label {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.optivision-metric-sub {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Hero CTA Buttons */
+.optivision-hero-cta-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.optivision-btn-hero-primary {
+  background: #086288;
+  border: 1px solid #38bdf8;
+  color: #ffffff;
+  padding: 13px 34px;
+  border-radius: 28px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(8, 98, 136, 0.5);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optivision-btn-hero-primary:hover {
+  background: #0a7cae;
+  transform: translateY(-2px);
+}
+
+.optivision-btn-hero-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  padding: 13px 28px;
+  border-radius: 28px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optivision-btn-hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================================
+   MODAL POPUP DIALOG (Dành Riêng Cho Nhân Sự & Quản Lý)
+   ============================================================ */
+.optivision-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(4, 15, 26, 0.76);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: optivisionModalFadeIn 0.25s ease-out;
+}
+
+@keyframes optivisionModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.optivision-staff-modal-card {
+  width: 100%;
+  max-width: 1020px;
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.15);
+  position: relative;
+  max-height: 94vh;
+}
+
+/* ---------------- MODAL LEFT PANE (Dark Ocean Navy) ---------------- */
+.optivision-staff-modal-left {
+  flex: 0 0 440px;
+  background: linear-gradient(170deg, #072a42 0%, #041d2e 60%, #02121d 100%);
+  padding: 30px 28px 24px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.optivision-staff-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(14, 58, 88, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.optivision-staff-left-title {
+  margin: 14px 0 6px 0;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.22;
+  color: #ffffff;
+}
+
+.optivision-staff-left-title span {
+  color: #38bdf8;
+  display: block;
+}
+
+.optivision-staff-left-desc {
+  font-size: 12.5px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* Clinical Prescription Box (OD/OS Live Sync) */
+.optivision-staff-clinical-box {
+  background: #083452;
+  border: 1px solid #134e75;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.optivision-staff-clinical-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.optivision-staff-clinical-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.optivision-staff-live-sync {
+  font-size: 11px;
+  font-weight: 600;
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.optivision-staff-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+}
+
+.optivision-staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.optivision-staff-table th {
+  color: #7dd3fc;
+  font-weight: 700;
+  padding: 4px 6px;
+  text-align: center;
+  border-bottom: 1px solid #154c72;
+}
+
+.optivision-staff-table td {
+  padding: 5px 6px;
+  text-align: center;
+  color: #f1f5f9;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.optivision-staff-table td.eye-col {
+  text-align: left;
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+/* Lab Lens Mini Banner */
+.optivision-staff-lab-banner {
+  background: linear-gradient(135deg, #0c3e62 0%, #062338 100%);
+  border: 1px solid #17547d;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.optivision-staff-lab-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.optivision-staff-lab-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.optivision-staff-lab-sub {
+  font-size: 10.5px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.optivision-staff-lab-badge {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Feature Checkpoints */
+.optivision-staff-features {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.optivision-staff-feature-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.optivision-staff-feature-icon {
+  color: #38bdf8;
+  font-size: 13px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.optivision-staff-left-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: #64748b;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 10px;
+}
+
+/* ---------------- MODAL RIGHT PANE (Clean White Form) ---------------- */
+.optivision-staff-modal-right {
+  flex: 1;
+  background: #ffffff;
+  padding: 26px 36px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+  color: #1e293b;
+}
+
+/* Top bar: Mode Switcher + RBAC + Close */
+.optivision-staff-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.optivision-staff-switch-pill {
+  background: #f1f5f9;
+  border-radius: 20px;
+  padding: 3px;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.optivision-staff-mode-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.optivision-staff-mode-btn.active {
+  background: #074d75;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(7, 77, 117, 0.25);
+}
+
+.optivision-staff-top-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.optivision-staff-rbac-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+  padding: 3px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.optivision-staff-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: none;
+  color: #64748b;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.optivision-staff-close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Titles */
+.optivision-staff-title-group h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #074d75;
+  margin: 0 0 2px 0;
+  letter-spacing: -0.3px;
+}
+
+.optivision-staff-title-group p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0 0 12px 0;
+}
+
+/* Quick Role Switcher Bar */
+.optivision-staff-role-bar {
+  display: flex;
+  background: #edf4fa;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.optivision-staff-role-item {
+  flex: 1;
+  text-align: center;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.optivision-staff-role-item:hover {
+  color: #074d75;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.optivision-staff-role-item.active {
+  background: #074d75;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(7, 77, 117, 0.25);
+}
+
+/* Form Fields */
+.optivision-staff-field {
+  margin-bottom: 10px;
+}
+
+.optivision-staff-field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.optivision-staff-field-label-row .hint {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.optivision-staff-input {
+  width: 100%;
+  height: 40px;
+  background: #f1f6fb;
+  border: 1px solid #cfe0ef;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.optivision-staff-input:focus {
+  background: #ffffff;
+  border-color: #086288;
+  box-shadow: 0 0 0 2px rgba(8, 98, 136, 0.15);
+}
+
+.optivision-staff-select {
+  width: 100%;
+  height: 40px;
+  background: #f1f6fb;
+  border: 1px solid #cfe0ef;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 13px;
+  color: #0f172a;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.optivision-staff-select:focus {
+  background: #ffffff;
+  border-color: #086288;
+}
+
+/* 6 OTP boxes in Staff Modal */
+.optivision-staff-otp-row {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.optivision-staff-otp-cell {
+  flex: 1;
+  height: 42px;
+  background: #f1f6fb;
+  border: 1px solid #cfe0ef;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #074d75;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.optivision-staff-otp-cell:focus {
+  background: #ffffff;
+  border-color: #074d75;
+  box-shadow: 0 0 0 2px rgba(7, 77, 117, 0.18);
+}
+
+.optivision-staff-otp-subtext {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+/* Action Button */
+.optivision-staff-submit-btn {
+  width: 100%;
+  height: 44px;
+  background: #074d75;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(7, 77, 117, 0.28);
+  transition: all 0.2s ease;
+}
+
+.optivision-staff-submit-btn:hover {
+  background: #053b5c;
+  transform: translateY(-1px);
+}
+
+/* Secondary Actions */
+.optivision-staff-links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11.5px;
+}
+
+.optivision-staff-link {
+  color: #475569;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.optivision-staff-link:hover {
+  color: #086288;
+}
+
+/* SSO Divider */
+.optivision-staff-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 10px 0 8px 0;
+  color: #94a3b8;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.optivision-staff-divider::before,
+.optivision-staff-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.optivision-staff-divider span {
+  padding: 0 10px;
+}
+
+/* Enterprise SSO Buttons */
+.optivision-staff-sso-row {
+  display: flex;
+  gap: 10px;
+}
+
+.optivision-staff-sso-btn {
+  flex: 1;
+  height: 36px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.optivision-staff-sso-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* Compliance Footer */
+.optivision-staff-footer-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #94a3b8;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+/* Responsive Modal */
+@media (max-width: 860px) {
+  .optivision-staff-modal-card {
+    flex-direction: column;
+    max-height: 96vh;
+    overflow-y: auto;
+  }
+  .optivision-staff-modal-left {
+    flex: none;
+    width: 100%;
+    padding: 22px 18px;
+  }
+  .optivision-staff-modal-right {
+    padding: 22px 18px;
+  }
+  .optivision-portal-header {
+    padding: 0 16px;
+  }
+  .optivision-ops-menu {
+    display: none;
+  }
+  .optivision-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
