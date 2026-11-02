@@ -28,6 +28,8 @@ import {
   ArrowLeftOutlined,
   FileProtectOutlined
 } from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './AuthPage.css';
 
 const { Option } = Select;
@@ -80,6 +82,9 @@ const BRANCH_OPTIONS = [
 ];
 
 export default function AuthPage({ onLoginSuccess }) {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   // Mode: 'login' | 'register'
   const [authMode, setAuthMode] = useState('login');
   const [selectedRole, setSelectedRole] = useState('pos');
@@ -194,21 +199,22 @@ export default function AuthPage({ onLoginSuccess }) {
       const conf = ROLE_CONFIGS[selectedRole];
       const branchObj = BRANCH_OPTIONS.find(b => b.value === selectedBranch);
 
-      notification.success({
-        message: 'Đăng nhập thành công!',
-        description: `Chào mừng ${conf.staffName} (${conf.roleLabel}). Phiên làm việc bảo mật SHA-256 + 2FA đã kích hoạt.`,
-        placement: 'topRight'
-      });
+      const userData = {
+        role: selectedRole,
+        staffId: staffId,
+        staffName: conf.staffName,
+        branchName: branchObj ? branchObj.label : 'Chi nhánh 01 - Flagship Lê Thánh Tôn, Quận 1',
+        initialKey: conf.initialKey
+      };
+
+      const defaultDest = login(userData);
 
       if (onLoginSuccess) {
-        onLoginSuccess({
-          role: selectedRole,
-          staffId: staffId,
-          staffName: conf.staffName,
-          branchName: branchObj ? branchObj.label : 'Chi nhánh Lê Thánh Tôn',
-          initialKey: conf.initialKey
-        });
+        onLoginSuccess(userData);
       }
+
+      const returnUrl = location.state?.from?.pathname || defaultDest || '/pos';
+      navigate(returnUrl, { replace: true });
     }, 600);
   };
 
