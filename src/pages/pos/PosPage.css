@@ -1,0 +1,230 @@
+/* ============================================================
+   OptiVision POS Terminal Stylesheet
+   Hardware Barcode Scanner Listener & Fast Cashier Terminal
+   ============================================================ */
+
+.pos-scanner-banner {
+  background: linear-gradient(135deg, #072d47 0%, #086288 100%);
+  border-radius: 12px;
+  padding: 14px 20px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 14px rgba(8, 98, 136, 0.2);
+}
+
+.pos-scanner-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pos-scanner-pulse-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  animation: posPulse 1.8s infinite;
+}
+
+@keyframes posPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(52, 211, 153, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+  }
+}
+
+.pos-scanner-text h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.pos-scanner-text p {
+  margin: 2px 0 0 0;
+  font-size: 11.5px;
+  color: #bae6fd;
+}
+
+/* Big Barcode Search Input with Laser Line Effect */
+.pos-barcode-input-container {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.pos-barcode-big-input .ant-input-affix-wrapper {
+  height: 50px !important;
+  border-radius: 10px !important;
+  border: 2px solid #086288 !important;
+  box-shadow: 0 2px 8px rgba(8, 98, 136, 0.12) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  background: #ffffff !important;
+  transition: all 0.2s ease !important;
+}
+
+.pos-barcode-big-input .ant-input-affix-wrapper:focus-within {
+  box-shadow: 0 0 0 4px rgba(8, 98, 136, 0.22) !important;
+  border-color: #074d75 !important;
+}
+
+.pos-laser-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+/* Quick Barcode Demo Pills */
+.pos-quick-catalog {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+}
+
+.pos-quick-catalog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.pos-quick-catalog-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pos-barcode-demo-btn {
+  background: #ffffff;
+  border: 1px solid #94a3b8;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.pos-barcode-demo-btn:hover {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0369a1;
+  transform: translateY(-1px);
+}
+
+.pos-barcode-demo-btn:active {
+  transform: translateY(0);
+}
+
+/* Cart Table Styling */
+.pos-cart-row-highlight {
+  animation: posHighlight 1.2s ease;
+}
+
+@keyframes posHighlight {
+  0% {
+    background-color: rgba(151, 215, 255, 0.45);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Cash Suggested Quick Buttons */
+.pos-cash-quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pos-cash-pill {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #334155;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pos-cash-pill:hover {
+  background: #086288;
+  border-color: #086288;
+  color: #ffffff;
+}
+
+/* VietQR Interactive Card */
+.pos-vietqr-box {
+  background: #ffffff;
+  border: 2px solid #086288;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(8, 98, 136, 0.15);
+}
+
+.pos-vietqr-img {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* Print thermal receipt wrapper - hidden from normal view unless printed */
+.pos-receipt-print-container {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .pos-receipt-print-container,
+  .pos-receipt-print-container * {
+    visibility: visible;
+  }
+  .pos-receipt-print-container {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    margin: 0;
+    padding: 0;
+  }
+}
+
