@@ -16,13 +16,17 @@ import {
   DeleteOutlined,
   CreditCardOutlined,
   PlusOutlined,
-  QrcodeOutlined
+  QrcodeOutlined,
+  LogoutOutlined
 } from '@ant-design/icons';
+import AuthPage from './component/auth/AuthPage';
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [selectedKey, setSelectedKey] = useState('pos');
   const [cartItems, setCartItems] = useState([
     { id: 1, sku: 'FRM-BOLON-BLK', name: 'Gọng Bolon Titanium Mắt Vuông - Đen', category: 'Gọng Kính', price: 3250000, qty: 1 },
@@ -643,6 +647,32 @@ export default function App() {
     </div>
   );
 
+  if (!isAuthenticated) {
+    return (
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: '#086288',
+            colorLink: '#4D8DBA',
+            colorSuccess: '#086288',
+            borderRadius: 8,
+            fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif"
+          }
+        }}
+      >
+        <AuthPage
+          onLoginSuccess={(userData) => {
+            setIsAuthenticated(true);
+            setCurrentUser(userData);
+            if (userData && userData.initialKey) {
+              setSelectedKey(userData.initialKey);
+            }
+          }}
+        />
+      </ConfigProvider>
+    );
+  }
+
   return (
     <ConfigProvider
       theme={{
@@ -718,14 +748,35 @@ export default function App() {
               {selectedKey === 'lab' && 'Quy Trình Gia Công Kính Xưởng Lab & QC'}
               {selectedKey === 'dashboard' && 'Tổng Quan Kinh Doanh & Tồn Kho Chi Nhánh'}
             </Title>
-            <Space size={16}>
+            <Space size={14}>
               <Tag style={{ background: '#FFEFC4', color: '#086288', borderColor: '#086288', fontWeight: 700, padding: '4px 10px', borderRadius: 20 }}>
-                Chi nhánh Quận 1 (HCM)
+                {currentUser?.branchName || 'Chi nhánh Quận 1 (HCM)'}
               </Tag>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f0f9ff', padding: '6px 14px', borderRadius: 20, border: '1px solid #97D7FF' }}>
                 <UserOutlined style={{ color: '#086288', fontSize: 14 }} />
-                <Text strong style={{ color: '#086288', fontSize: 13 }}>Nguyễn Bán Hàng (Thu Ngân)</Text>
+                <Text strong style={{ color: '#086288', fontSize: 13 }}>
+                  {currentUser?.staffName || 'Nguyễn Bán Hàng (Thu Ngân)'}
+                </Text>
               </div>
+              <Button
+                type="default"
+                icon={<LogoutOutlined />}
+                onClick={() => {
+                  setIsAuthenticated(false);
+                  notification.info({
+                    message: 'Đã kết thúc ca làm việc',
+                    description: 'Hệ thống đã khóa phiên làm việc an toàn.'
+                  });
+                }}
+                style={{
+                  borderRadius: 20,
+                  borderColor: '#cbd5e1',
+                  color: '#475569',
+                  fontWeight: 600
+                }}
+              >
+                Đăng Xuất Ca
+              </Button>
             </Space>
           </Header>
 
