@@ -4,9 +4,12 @@ import { ProductImage, money } from './ProductCatalog';
 export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQuantity, onRemove, onClear,
   products, subtotal, discount, tax, total, voucher, setVoucher, onVoucher,
   usePoints, setUsePoints, method, setMethod, cash, setCash, confirmed, setConfirmed,
-  paymentRef, cashRef, paying, onPay, lastOrder, onPrint, loyalty, pointsToUse, setPointsToUse, offer, offerError, offerPending }) {
-  return <aside className="pos-checkout" aria-label="Giỏ hàng và thanh toán" aria-busy={paying}>
-    <header className="pos-checkout-heading"><h2>Đơn hàng hiện tại</h2><span>{cart.reduce((sum, item) => sum + item.quantity, 0)} món</span></header>
+  paymentRef, cashRef, paying, onPay, lastOrder, onPrint, loyalty, pointsToUse, setPointsToUse, offer, offerError, offerPending, open = true, onCollapse }) {
+  return <aside id="pos-checkout" className="pos-checkout" hidden={!open} aria-label="Giỏ hàng và thanh toán" aria-busy={paying}>
+    <header className="pos-checkout-heading"><h2>Đơn hàng hiện tại</h2><span>{cart.reduce((sum, item) => sum + item.quantity, 0)} món</span>
+      {onCollapse && <button type="button" className="pos-checkout-collapse" aria-label="Thu gọn đơn hàng" title="Thu gọn đơn hàng" aria-expanded={open} aria-controls="pos-checkout" disabled={paying} onClick={onCollapse}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+      </button>}</header>
     <div className="pos-checkout-body" aria-disabled={paying} inert={paying ? '' : undefined}><div className="pos-checkout-scroll">
       <div className="pos-customer"><span className="material-symbols-outlined" aria-hidden="true">person</span><div><strong>{customer.name}</strong>{customer.phone && <p>{customer.phone}</p>}</div>
         <button type="button" onClick={onCustomer}>Đổi khách</button>{customer.id && <button type="button" onClick={onGuest}>Vãng lai</button>}</div>

@@ -4,7 +4,7 @@ import { orderApi } from '../../api/orderApi';
 import { productApi } from '../../api/productApi';
 import { useAuth } from '../../context/AuthContext';
 import ReceiptPreview from './ReceiptPreview';
-import ProductCatalog from './ProductCatalog';
+import ProductCatalog, { money } from './ProductCatalog';
 import CheckoutPanel from './CheckoutPanel';
 import './pos.css';
 import { prescriptionApi } from '../../api/prescriptionApi';
@@ -16,15 +16,13 @@ import { promotionApi } from '../../api/promotionApi';
 import useHeldCarts from './useHeldCarts';
 import HeldCartsPanel from './HeldCartsPanel';
 import CancelOrderPanel from './CancelOrderPanel';
+import usePosPayment from './usePosPayment';
 
 export default function PosPage() {
   const { user } = useAuth();
   const { selectedBranch } = useOutletContext() || {};
   const branchCode = selectedBranch?.startsWith('Chi nhánh 01') ? 'BRANCH_01' : selectedBranch?.startsWith('Chi nhánh 02') ? 'BRANCH_02' : null;
   const [catalogVersion, setCatalogVersion] = useState(0);
-  const paymentLock = useRef(false);
-  const paymentRequestRef = useRef(null);
-  const [paying, setPaying] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -37,6 +35,22 @@ export default function PosPage() {
   const barcodeRef = useRef(null);
   const paymentRef = useRef(null);
   const cashInputRef = useRef(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const checkoutToggleRef = useRef(null);
+
+  function openCheckout() {
+    setCheckoutOpen(true);
+    requestAnimationFrame(() => {
+      paymentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      (cashInputRef.current || paymentRef.current)?.focus({ preventScroll: true });
+    });
+  }
+
+  function collapseCheckout() {
+    if (isPaymentLocked()) return;
+    setCheckoutOpen(false);
+    requestAnimationFrame(() => checkoutToggleRef.current?.focus({ preventScroll: true }));
+  }
 
   // Cart state
   const [cart, setCart] = useState([]);
@@ -73,6 +87,26 @@ export default function PosPage() {
   const [payTab, setPayTab] = useState('cash');
   const [cashGiven, setCashGiven] = useState(0);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const { paying, uncertainPayment, canRetryPayment, isPaymentLocked, submitPayment, retryPayment } = usePosPayment({
+    staffId: user?.staffId,
+    branchCode,
+    onRestored: restorePayment,
+    onPaid: acceptPayment,
+  });
+
+  function restorePayment(payload) {
+    setCart(payload.items.map(item => ({
+      id: item.skuId,
+      sku: item.skuId,
+      name: item.productName || item.skuId,
+      price: Number(item.expectedUnitPrice),
+      quantity: item.quantity,
+    })));
+    setCustomer({ id: payload.customerId, name: payload.customerName, phone: payload.customerPhone });
+    setPayTab(payload.paymentMethod === 'CASH' ? 'cash' : payload.paymentMethod === 'VIETQR' ? 'vietqr' : 'card');
+    setCashGiven(payload.cashReceived || 0);
+    setCheckoutOpen(true);
+  }
 
   // Rx Modal state
   const [isRxModalOpen, setIsRxModalOpen] = useState(false);
@@ -175,15 +209,15 @@ export default function PosPage() {
     return () => { active = false; clearTimeout(timer); };
   }, [offerKey]);
 
-  function clearCurrentCart() { setCart([]); setCustomer({ name: 'Khách vãng lai', tier: 'Vãng lai', phone: '', points: 0, pointValue: 0 }); setCashGiven(0); setPaymentConfirmed(false); setVoucherCode(''); setAppliedVoucher(''); setPointsToUse(0); setLinkedRx(null); setOffer(null); paymentRequestRef.current = null; }
+  function clearCurrentCart() { setCart([]); setCustomer({ name: 'Khách vãng lai', tier: 'Vãng lai', phone: '', points: 0, pointValue: 0 }); setCashGiven(0); setPaymentConfirmed(false); setVoucherCode(''); setAppliedVoucher(''); setPointsToUse(0); setLinkedRx(null); setOffer(null); }
   function holdCart() {
-    if (paymentLock.current) return false;
+    if (isPaymentLocked() || uncertainPayment) return false;
     try { held.hold(cart, customer, appliedVoucher, pointsToUse, linkedRx); clearCurrentCart(); message.success('Đã lưu đơn tạm. Có thể tạo đơn mới.'); return true; }
     catch (error) { message.error(error.message); return false; }
   }
   function restoreCart(draft) {
     if (draft.branchCode !== branchCode) { message.error('Đơn tạm thuộc chi nhánh khác.'); return false; }
-    if (paymentLock.current || catalogLoading) { message.warning('Chờ tải tồn kho / thanh toán xong.'); return false; }
+    if (isPaymentLocked() || uncertainPayment || catalogLoading) { message.warning('Chờ kiểm tra thanh toán / tải tồn kho xong.'); return false; }
     const restoredRx = availablePrescriptions.find(rx => draft.prescriptionId ? rx.id === draft.prescriptionId : rx.code === draft.prescriptionCode);
     if ((draft.prescriptionId || draft.prescriptionCode) && !restoredRx) {
       message.warning('Chưa tìm thấy toa kính của đơn tạm. Đơn vẫn được giữ; hãy tải lại danh sách toa trước khi khôi phục.');
@@ -206,7 +240,7 @@ export default function PosPage() {
 
   // Add product to cart
   const handleAddToCart = (product) => {
-    if (paymentLock.current) return;
+    if (isPaymentLocked() || uncertainPayment) return;
     if (!catalogProducts.some(p => p.sku === product.sku)) {
       message.warning('Chỉ có thể bán sản phẩm trong catalog.');
       return;
@@ -236,6 +270,7 @@ export default function PosPage() {
       ]);
     }
     message.success({ key: 'pos-add-product', content: `Đã thêm ${product.name.split(' - ')[0]}`, duration: 1.5 });
+    if (!checkoutOpen) return;
     requestAnimationFrame(() => {
       const paymentBounds = paymentRef.current?.getBoundingClientRect();
       if (paymentBounds && (paymentBounds.top < 72 || paymentBounds.bottom > window.innerHeight)) {
@@ -252,7 +287,7 @@ export default function PosPage() {
 
   // Adjust quantity
   const handleQtyChange = (sku, delta) => {
-    if (paymentLock.current) return;
+    if (isPaymentLocked() || uncertainPayment) return;
     const item = cart.find(p => p.sku === sku);
     const product = catalogProducts.find(p => p.sku === sku);
     if (delta > 0 && item.quantity >= (product?.stockQuantity ?? 0)) {
@@ -274,14 +309,14 @@ export default function PosPage() {
 
   // Remove single item
   const handleRemoveItem = (sku) => {
-    if (paymentLock.current) return;
+    if (isPaymentLocked() || uncertainPayment) return;
     setCart((prev) => prev.filter((item) => item.sku !== sku));
     message.info('Đã xóa sản phẩm khỏi giỏ hàng.');
   };
 
   // Clear entire cart
   const handleClearCart = () => {
-    if (paymentLock.current) return;
+    if (isPaymentLocked() || uncertainPayment) return;
     Modal.confirm({
       title: 'Xóa giỏ hàng?',
       content: 'Bạn có chắc chắn muốn làm trống toàn bộ đơn bán hiện tại (F8)?',
@@ -325,6 +360,7 @@ export default function PosPage() {
 
   // Select prescription from modal
   const handleSelectPrescription = (rx) => {
+    if (uncertainPayment) return;
     setLinkedRx({
       id: rx.id,
       customerId: rx.customerId,
@@ -347,9 +383,22 @@ export default function PosPage() {
     message.success(`Đã liên kết ${rx.code} cho khách ${rx.customer}!`);
   };
 
+  function acceptPayment(saved, payload) {
+    setLastOrder({ ...saved, cashGiven: payload.cashReceived });
+    setCatalogVersion(value => value + 1);
+    clearCurrentCart();
+    if (saved.inventorySyncStatus === 'RECONCILIATION_REQUIRED' || saved.inventorySyncStatus === 'FAILED') {
+      message.warning(`Đơn ${saved.orderCode} đã ghi nhận tiền; kho cần đối soát. Không thanh toán lại.`);
+    } else if (saved.inventorySyncStatus === 'PENDING') {
+      message.warning(`Đơn ${saved.orderCode} đã thanh toán; kho đang chờ đồng bộ và sẽ thử lại.`);
+    } else message.success('Đã lưu đơn ' + saved.orderCode + '. Bạn có thể in hóa đơn.');
+  }
+
   // Only clear the cart after the API has persisted the sale.
   const handleExecutePayment = async () => {
-    if (paymentLock.current) return;
+    if (isPaymentLocked()) return;
+    if (uncertainPayment) { message.warning('Kiểm tra / thử lại yêu cầu cũ trước khi thanh toán đơn mới.'); return; }
+    if (!checkoutOpen) { openCheckout(); return; }
     if (!cart.length) { message.warning('Giỏ hàng đang trống!'); return; }
     if (linkedRx && !Number.isSafeInteger(linkedRx.id)) { message.warning('Toa kính thiếu ID hợp lệ. Vui lòng chọn lại toa trước khi thanh toán.'); return; }
     if (!offerReady) { message.warning(offerError || 'Chờ backend kiểm tra giá và ưu đãi.'); return; }
@@ -363,50 +412,26 @@ export default function PosPage() {
     if (payTab === 'cash' && (!Number.isFinite(Number(cashGiven)) || Number(cashGiven) < grandTotal)) {
       message.warning('Tiền khách đưa chưa đủ thanh toán.'); return;
     }
-    paymentLock.current = true;
-    setPaying(true);
-    try {
-      const orderPayload = {
-        customerId: customer.id || null,
-        customerName: customer.name,
-        customerPhone: customer.phone,
-        channel: 'POS',
-        voucherCode: appliedVoucher || null,
-        pointsToUse,
-        cashReceived: payTab === 'cash' ? Number(cashGiven) : null,
-        paymentMethod: payTab === 'vietqr' ? 'VIETQR' : payTab === 'cash' ? 'CASH' : 'CARD',
-        staffName: user?.staffName || user?.fullName || user?.staffId || 'Thu ngân',
-        branchName: selectedBranch,
-        branchCode,
-        items: cart.map(item => ({
-          skuId: item.sku, productName: item.name,
-          prescriptionId: linkedRx && catalogProducts.find(product => product.sku === item.sku)?.category === 'LENS' ? linkedRx.id : null,
-          quantity: item.quantity, expectedUnitPrice: item.price
-        }))
-      };
-      const requestFingerprint = JSON.stringify({ ...orderPayload, cashReceived: undefined });
-      if (paymentRequestRef.current?.fingerprint !== requestFingerprint) {
-        paymentRequestRef.current = {
-          fingerprint: requestFingerprint,
-          key: crypto.randomUUID()
-        };
-      }
-      const saved = await orderApi.createOrder(orderPayload, paymentRequestRef.current.key);
-      if (!saved?.id || !saved?.orderCode) throw new Error('API chưa trả về đơn hàng đã lưu.');
-      paymentRequestRef.current = null;
-      setLastOrder({ ...saved, cashGiven: payTab === 'cash' ? Number(cashGiven) : null });
-      setCatalogVersion(value => value + 1);
-      clearCurrentCart();
-      if (saved.inventorySyncStatus === 'FAILED') {
-        message.error(`Đơn ${saved.orderCode} đã thanh toán nhưng chưa trừ được tồn kho. Vui lòng liên hệ quản lý.`);
-      } else if (saved.inventorySyncStatus === 'PENDING') {
-        message.warning(`Đơn ${saved.orderCode} đã thanh toán; đồng bộ tồn kho đang chờ và sẽ được tự động thử lại.`);
-      } else {
-        message.success('Đã lưu đơn ' + saved.orderCode + '. Bạn có thể in hóa đơn.');
-      }
-    } catch (err) {
-      message.error('Chưa hoàn tất thanh toán: ' + err.message + '. Giỏ hàng được giữ nguyên.');
-    } finally { paymentLock.current = false; setPaying(false); }
+    const orderPayload = {
+      customerId: customer.id || null,
+      customerName: customer.name,
+      customerPhone: customer.phone,
+      channel: 'POS',
+      voucherCode: appliedVoucher || null,
+      pointsToUse,
+      cashReceived: payTab === 'cash' ? Number(cashGiven) : null,
+      manualPaymentConfirmed: payTab !== 'cash' && paymentConfirmed,
+      paymentMethod: payTab === 'vietqr' ? 'VIETQR' : payTab === 'cash' ? 'CASH' : 'CARD',
+      staffName: user?.staffName || user?.fullName || user?.staffId || 'Thu ngân',
+      branchName: selectedBranch,
+      branchCode,
+      items: cart.map(item => ({
+        skuId: item.sku, productName: item.name,
+        prescriptionId: linkedRx && catalogProducts.find(product => product.sku === item.sku)?.category === 'LENS' ? linkedRx.id : null,
+        quantity: item.quantity, expectedUnitPrice: item.price
+      }))
+    };
+    await submitPayment(orderPayload);
   };
 
   // POS hotkeys: F2 search, F4 hold, F8 clear, F10 checkout
@@ -435,7 +460,7 @@ export default function PosPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [cart, grandTotal, payTab, cashGiven, customer, discountTotal, user, linkedRx, paymentConfirmed, selectedBranch, branchCode, catalogLoading, catalogProducts, offerReady, offerError, appliedVoucher, pointsToUse, offerKey]);
+  }, [cart, grandTotal, payTab, cashGiven, customer, discountTotal, user, linkedRx, paymentConfirmed, selectedBranch, branchCode, catalogLoading, catalogProducts, offerReady, offerError, appliedVoucher, pointsToUse, offerKey, checkoutOpen, uncertainPayment]);
 
   // Filter products by category
   const categoryProducts =
@@ -449,9 +474,11 @@ export default function PosPage() {
 
   return (
     <main className="pos-page">
-      <div className="pos-today-tools"><HeldCartsPanel drafts={held.drafts} onHold={holdCart} onRestore={restoreCart} onDelete={id => { try { held.remove(id); } catch(error) { message.error(error.message); } }} disabled={paying || catalogLoading} />
+      {uncertainPayment && <Alert type="warning" showIcon message="Yêu cầu thanh toán trước chưa rõ kết quả" description="Không tạo đơn mới. Thử lại đúng yêu cầu và khóa đã gửi; nếu đã ghi nhận, hệ thống trả đơn cũ. Yêu cầu vẫn được giữ khi tải lại trang."
+        action={<button type="button" className="pos-outline" disabled={paying || !canRetryPayment} onClick={retryPayment}>Kiểm tra / thử lại yêu cầu cũ</button>} />}
+      <div className="pos-today-tools"><HeldCartsPanel drafts={held.drafts} onHold={holdCart} onRestore={restoreCart} onDelete={id => { try { held.remove(id); } catch(error) { message.error(error.message); } }} disabled={paying || uncertainPayment || catalogLoading} />
         <CancelOrderPanel lastOrder={lastOrder} onChanged={saved => { if (saved.id === lastOrder?.id) setLastOrder(saved); setCatalogVersion(value => value + 1); }} />
-        <button type="button" className="pos-outline" disabled={paying || catalogLoading} onClick={() => Modal.confirm({
+        <button type="button" className="pos-outline" disabled={paying || uncertainPayment || catalogLoading} onClick={() => Modal.confirm({
           title: 'Cập nhật giá và tồn kho?', content: 'Giỏ hàng được giữ nguyên số lượng. Giá sẽ lấy lại từ catalog; hãy kiểm tra tổng tiền mới trước khi thanh toán.',
           okText: 'Cập nhật', cancelText: 'Giữ giá hiện tại', onOk: () => { setOffer(null); setCashGiven(0); setCatalogVersion(value => value + 1); }
         })}>Cập nhật giá / tồn kho</button></div>
@@ -461,12 +488,12 @@ export default function PosPage() {
         && !catalogProducts.some(product => product.stockQuantity > 0) && <Alert showIcon type="info"
           message="Chi nhánh này chưa có hàng để bán. Cần tạo phiếu điều chuyển và xác nhận nhận hàng từ kho nguồn."
           style={{ marginBottom: 12 }} />}
-      <div className="pos-workspace">
+      <div className={`pos-workspace${checkoutOpen ? '' : ' is-checkout-collapsed'}`}>
         <ProductCatalog products={filteredProducts} count={catalogProducts.length} cart={cart}
           loading={catalogLoading} error={catalogError} category={selectedCategory} setCategory={setSelectedCategory}
           search={barcodeInput} setSearch={setBarcodeInput} searchRef={barcodeRef} onSearch={handleBarcodeSubmit}
           onAdd={handleAddToCart} prescription={linkedRx} onSelectPrescription={() => setIsRxModalOpen(true)} onAddLens={handleInsertRxCombo} />
-        <CheckoutPanel cart={cart} customer={customer} products={catalogProducts}
+        <CheckoutPanel cart={cart} customer={customer} products={catalogProducts} open={checkoutOpen} onCollapse={collapseCheckout}
           onCustomer={() => setIsCustomerModalOpen(true)}
           onGuest={() => { setLinkedRx(null); setCustomer({ name: 'Khách vãng lai', tier: 'Vãng lai', phone: '', points: 0, pointValue: 0 }); }}
           onQuantity={handleQtyChange} onRemove={handleRemoveItem} onClear={handleClearCart}
@@ -476,8 +503,13 @@ export default function PosPage() {
           loyalty={loyalty} offer={offerReady ? offer : null} offerError={offerError} offerPending={cart.length > 0 && !offerReady}
           method={payTab} setMethod={setPayTab} cash={cashGiven} setCash={setCashGiven}
           confirmed={paymentConfirmed} setConfirmed={setPaymentConfirmed} paymentRef={paymentRef} cashRef={cashInputRef}
-          paying={paying} onPay={handleExecutePayment} lastOrder={lastOrder} onPrint={() => setReceiptOpen(true)} />
+          paying={paying || uncertainPayment} onPay={handleExecutePayment} lastOrder={lastOrder} onPrint={() => setReceiptOpen(true)} />
       </div>
+      {!checkoutOpen && <button type="button" ref={checkoutToggleRef} className="pos-checkout-reopen" aria-label="Mở đơn hàng hiện tại" aria-expanded={false} aria-controls="pos-checkout" onClick={openCheckout}>
+        <span className="material-symbols-outlined" aria-hidden="true">shopping_bag</span>
+        <span><strong>Đơn hiện tại · {cart.reduce((sum, item) => sum + item.quantity, 0)} món</strong><small>{money(grandTotal)} · Mở để thanh toán</small></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
+      </button>}
 
       {/* ================= MODAL: Chọn Toa Khám Khúc Xạ ================= */}
       {isRxModalOpen && (

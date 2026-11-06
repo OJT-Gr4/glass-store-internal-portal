@@ -188,6 +188,18 @@
 @container (min-width: 1400px) { .pos-product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
 /* One scroll area for customer, cart and offers; totals/payment stay outside it. */
+.pos-checkout[hidden] { display: none !important; }
+.pos-workspace.is-checkout-collapsed { grid-template-columns: minmax(0, 1fr); padding-bottom: 100px; }
+.pos-checkout-heading h2 { flex: 1; }
+.pos-checkout-collapse { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border: 1px solid #dce7ee; border-radius: 8px; background: #f5f9fb; color: #086288; cursor: pointer; }
+.pos-checkout-collapse:hover { background: #e5f0f5; }
+.pos-checkout-collapse:disabled { opacity: .5; cursor: wait; }
+.pos-checkout-reopen { position: fixed; bottom: 24px; right: 24px; z-index: 40; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border: 1px solid #087397; border-radius: 14px; background: #004967; color: white; box-shadow: 0 8px 28px #00496733; text-align: left; cursor: pointer; max-width: calc(100vw - 32px); }
+.pos-checkout-reopen:hover { background: #086288; }
+.pos-checkout-reopen strong, .pos-checkout-reopen small { display: block; }
+.pos-checkout-reopen small { margin-top: 3px; color: #c6e7ff; font-size: 11px; }
+.pos-checkout-collapse:focus-visible, .pos-checkout-reopen:focus-visible { outline: 3px solid #54b8dd; outline-offset: 3px; }
+@container (min-width: 820px) { .is-checkout-collapsed .pos-product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .pos-checkout-body { min-width: 0; }
 .pos-checkout-scroll { min-width: 0; }
 .pos-checkout .pos-discount[open] { max-height: none; overflow: visible; }

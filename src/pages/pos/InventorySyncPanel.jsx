@@ -28,7 +28,8 @@ export default function InventorySyncPanel({ branchCode, selectedBranch, lastOrd
   return <details className="pos-inventory-sync" open={order && order.inventorySyncStatus !== 'SYNCED' ? true : undefined}>
     <summary>Kiểm tra / thử lại đồng bộ kho đơn đã thanh toán</summary>
     <form onSubmit={lookup}><input aria-label="Mã đơn đồng bộ kho" value={code} onChange={e => setCode(e.target.value)} placeholder="Nhập mã OPT-…" required /><button className="pos-outline" disabled={busy}>Kiểm tra</button></form>
-    {order && <div><p>Đơn {order.orderCode} · {order.branchName} · Kho: <strong>{order.inventorySyncStatus || 'Chưa xác định'}</strong></p>
+    {order && <div><p>Đơn {order.orderCode} · {order.branchName} · Kho: <strong>{{PENDING:'Chờ đồng bộ',SYNCED:'Đã đồng bộ',FAILED:'Thất bại',RECONCILIATION_REQUIRED:'Cần đối soát'}[order.inventorySyncStatus] || order.inventorySyncStatus || 'Chưa xác định'}</strong></p>
+      {order.inventorySyncError && <p role="alert">{order.inventorySyncError}</p>}
       {order.inventorySyncStatus !== 'SYNCED' && order.status === 'PAID' && <button type="button" className="pos-outline" disabled={busy} onClick={retry}>Thử lại đồng bộ kho</button>}</div>}
   </details>;
 }

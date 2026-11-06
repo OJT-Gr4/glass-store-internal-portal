@@ -24,7 +24,10 @@ export async function apiFetch(endpoint, options = {}) {
 
     if (!response.ok) {
       const errorMsg = data?.message || `Lỗi yêu cầu: ${response.status} ${response.statusText}`;
-      throw new Error(errorMsg);
+      const error = new Error(errorMsg);
+      error.status = response.status;
+      error.errorCode = data?.errorCode;
+      throw error;
     }
 
     return data;
