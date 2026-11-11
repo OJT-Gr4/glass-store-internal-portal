@@ -55,5 +55,13 @@ export const authApi = {
     });
     authApi.logout();
     return res?.data;
+  },
+
+  async updateMyAvatar(avatarUrl) {
+    const res = await apiFetch('/api/auth/me/avatar', {
+      method: 'PUT',
+      body: JSON.stringify({ avatarUrl }),
+    });
+    return res?.data;
   }
 };

@@ -86,8 +86,6 @@ export default function InventoryPage() {
     };
   }, [loadInventory]);
 
-  const activeLocations = locations.length > 0 ? locations : DEFAULT_LOCATIONS;
-
   const filteredInventory = useMemo(() => {
     const searchTerm = query.trim().toLowerCase();
     return inventory.filter((item) => {

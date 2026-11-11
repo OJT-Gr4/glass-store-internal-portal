@@ -2,9 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../routes/rolesConfig';
-import { Drawer, Empty, Spin, Tag, message } from 'antd';
+import { Drawer, Empty, Modal, Spin, Tag, message } from 'antd';
 import { catalogManagementApi } from '../../api/catalogManagementApi';
 import { notificationApi } from '../../api/notificationApi';
+import { compressImageToDataUrl, DEFAULT_AVATAR_URL, isValidImageInput } from '../../utils/imageUploadUtils';
 import {
   applySingleMarkRead,
   categoryMeta,
@@ -16,9 +17,12 @@ import {
 
 
 export default function MainLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateAvatar } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  const [avatarDraft, setAvatarDraft] = useState(DEFAULT_AVATAR_URL);
+  const [avatarSaving, setAvatarSaving] = useState(false);
 
   // Current logged in role
   const currentRole = user?.role || ROLES.ADMIN;
@@ -388,20 +392,34 @@ export default function MainLayout() {
         </div>
 
         {/* Sidebar Footer User Info & Logout */}
-        <div className="p-3 border-t border-[#e7eeff] bg-[#e7eeff]/60 flex items-center justify-between">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="w-8 h-8 rounded-full bg-[#004967] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-              <span className="material-symbols-outlined text-[16px]">person</span>
-            </div>
+        <div className="p-3 border-t border-[#e7eeff] bg-[#e7eeff]/60 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setAvatarDraft(user?.avatarUrl || DEFAULT_AVATAR_URL);
+              setAvatarModalOpen(true);
+            }}
+            title="Nhấn để cập nhật ảnh đại diện"
+            className="flex items-center gap-2 overflow-hidden text-left hover:bg-white/60 rounded-xl p-1 -m-1 transition cursor-pointer flex-1"
+          >
+            <img
+              src={user?.avatarUrl || DEFAULT_AVATAR_URL}
+              alt={user?.staffName || 'Nhân sự OptiVision'}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = DEFAULT_AVATAR_URL;
+              }}
+              className="w-8 h-8 rounded-full object-cover ring-1 ring-[#cde5f5] bg-white flex-shrink-0"
+            />
             <div className="overflow-hidden leading-tight">
               <div className="text-xs font-bold text-[#111c2d] truncate">
                 {user?.staffName || 'Nhân sự OptiVision'}
               </div>
               <div className="text-[10px] text-[#086288] font-semibold truncate">
-                {user?.roleLabel || 'Nhân viên'}
+                {user?.roleLabel || 'Nhân viên'} · Đổi avatar
               </div>
             </div>
-          </div>
+          </button>
           <button
             type="button"
             onClick={handleLogout}
@@ -725,6 +743,90 @@ export default function MainLayout() {
           )}
         </div>
       </Drawer>
+
+      <Modal
+        title="Cập Nhật Ảnh Đại Diện Nhân Sự"
+        open={avatarModalOpen}
+        onCancel={() => !avatarSaving && setAvatarModalOpen(false)}
+        confirmLoading={avatarSaving}
+        okText="Lưu ảnh đại diện"
+        cancelText="Đóng"
+        onOk={async () => {
+          const val = (avatarDraft || '').trim();
+          if (val && !isValidImageInput(val)) {
+            message.error('Link ảnh không hợp lệ (cần bắt đầu bằng http://, https:// hoặc tải tệp ảnh).');
+            return;
+          }
+          setAvatarSaving(true);
+          try {
+            await updateAvatar(val || DEFAULT_AVATAR_URL);
+            message.success('Đã cập nhật ảnh đại diện thành công!');
+            setAvatarModalOpen(false);
+          } catch (err) {
+            message.error(err.message || 'Không thể lưu ảnh đại diện.');
+          } finally {
+            setAvatarSaving(false);
+          }
+        }}
+      >
+        <div className="space-y-4 pt-2">
+          <div className="flex items-center gap-4 p-3 rounded-xl bg-[#f0f3ff] border border-[#dee8ff]">
+            <img
+              src={avatarDraft || DEFAULT_AVATAR_URL}
+              alt="Xem trước avatar"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = DEFAULT_AVATAR_URL;
+              }}
+              className="w-16 h-16 rounded-full object-cover ring-2 ring-[#086288] bg-white shrink-0"
+            />
+            <div className="text-xs space-y-1">
+              <div className="font-bold text-[#111c2d]">{user?.staffName || 'Nhân sự'}</div>
+              <div className="text-[#086288] font-semibold">{user?.roleLabel}</div>
+              <button
+                type="button"
+                onClick={() => setAvatarDraft(DEFAULT_AVATAR_URL)}
+                className="text-[11px] text-[#086288] underline cursor-pointer"
+              >
+                Khôi phục ảnh mặc định
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 block">Dán link ảnh (URL) hoặc tải tệp từ máy</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={avatarDraft.startsWith('data:image/') ? '' : avatarDraft}
+                onChange={(e) => setAvatarDraft(e.target.value)}
+                placeholder={avatarDraft.startsWith('data:image/') ? 'Đã chọn ảnh từ máy (hoặc nhập link mới)' : 'https://...'}
+                className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#086288]"
+              />
+              <label className="px-3 py-2 rounded-lg bg-[#e7eeff] hover:bg-[#dee8ff] text-[#004967] text-xs font-bold cursor-pointer shrink-0">
+                Tải ảnh
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const compressed = await compressImageToDataUrl(file, 256, 0.85);
+                      setAvatarDraft(compressed);
+                    } catch (err) {
+                      message.error(err.message);
+                    } finally {
+                      e.target.value = '';
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

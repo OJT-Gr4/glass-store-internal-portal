@@ -17,12 +17,27 @@ import useHeldCarts from './useHeldCarts';
 import HeldCartsPanel from './HeldCartsPanel';
 import CancelOrderPanel from './CancelOrderPanel';
 import usePosPayment from './usePosPayment';
+import CustomerReceptionModal from './CustomerReceptionModal';
+import PosHistoryModal from './PosHistoryModal';
+import PosSepayModal from './PosSepayModal';
 import { getPosSellableQuantity, resolvePosBranchCode } from './posInventoryUtils';
 
 export default function PosPage() {
   const { user } = useAuth();
-  const { selectedBranch } = useOutletContext() || {};
+  const { selectedBranch, locations } = useOutletContext() || {};
   const branchCode = resolvePosBranchCode(selectedBranch);
+  const branchName = useMemo(() => {
+    return (
+      locations?.find((l) => l.code === branchCode)?.name
+      || (branchCode === 'BRANCH_01'
+        ? 'Chi nhánh 01'
+        : branchCode === 'BRANCH_02'
+          ? 'Chi nhánh 02'
+          : branchCode === 'LAB'
+            ? 'Tổng kho Lab'
+            : selectedBranch || 'Chi nhánh 01')
+    );
+  }, [locations, branchCode, selectedBranch]);
   const [catalogVersion, setCatalogVersion] = useState(0);
   const [lastOrder, setLastOrder] = useState(null);
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -171,7 +186,6 @@ export default function PosPage() {
           products.forEach(p => {
             if (p.variants && p.variants.length > 0) {
               p.variants.forEach(v => {
-                const stockQty = inventoryRows.find(row => row.sku === v.sku)?.quantities?.[branchCode] ?? 0;
                 list.push({
                   sku: v.sku || ('SKU-' + v.id),
                   barcode: v.barcode || '',
@@ -182,7 +196,7 @@ export default function PosPage() {
                   price: Number(v.price ?? 0),
                   stockQuantity: getPosSellableQuantity(inventoryBySku.get(v.sku), branchCode),
                   stock: getPosSellableQuantity(inventoryBySku.get(v.sku), branchCode) + ' cái',
-                  image: v.imageUrl || 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=500&q=80'
+                  image: v.imageUrl || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvIuZeIWL8lzCvG6kGgNUCAlk_ov0naBVuipn8z44eFg&s=10'
                 });
               });
             }

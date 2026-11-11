@@ -45,6 +45,7 @@ import {
   UploadOutlined
 } from '@ant-design/icons';
 import { catalogManagementApi } from '../../api/catalogManagementApi';
+import { compressImageToDataUrl, DEFAULT_PRODUCT_IMAGE, isValidImageInput } from '../../utils/imageUploadUtils';
 
 const { Text, Title } = Typography;
 
@@ -73,6 +74,7 @@ const EMPTY_DATA = { products: [], categories: [], brands: [], locations: [] };
 const formatMoney = (val) => (val != null ? `${Number(val).toLocaleString('vi-VN')} đ` : '—');
 
 const SAMPLE_IMAGE_PRESETS = [
+  { label: 'Ảnh mặc định OptiVision', url: DEFAULT_PRODUCT_IMAGE },
   { label: 'Gọng Bolon Square', url: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=500' },
   { label: 'Gọng Bolon Rose Gold', url: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=500' },
   { label: 'Gọng Gentle Monster', url: 'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=500' },
@@ -82,6 +84,13 @@ const SAMPLE_IMAGE_PRESETS = [
   { label: 'Hộp Đựng Da & Khăn', url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500' }
 ];
 
+const validateImageField = (_, value) => {
+  if (!value || !String(value).trim() || isValidImageInput(value)) {
+    return Promise.resolve();
+  }
+  return Promise.reject(new Error('URL ảnh phải bắt đầu bằng http(s):// hoặc tải lên tệp PNG/JPG/WEBP.'));
+};
+
 export default function CatalogManagementPage() {
   const [form] = Form.useForm();
   const [variantForm] = Form.useForm();
@@ -90,18 +99,17 @@ export default function CatalogManagementPage() {
   const watchedProductImage = Form.useWatch('initialImageUrl', form);
   const watchedVariantImage = Form.useWatch('imageUrl', variantForm);
 
-  const handleImageFileSelect = (e, targetForm, fieldName) => {
+  const handleImageFileSelect = async (e, targetForm, fieldName) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      message.error('Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP, GIF).');
-      return;
+    try {
+      const compressed = await compressImageToDataUrl(file, 640, 0.85);
+      targetForm.setFieldsValue({ [fieldName]: compressed });
+    } catch (err) {
+      message.error(err.message || 'Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP, GIF).');
+    } finally {
+      e.target.value = '';
     }
-    const reader = new FileReader();
-    reader.onload = (loadEvent) => {
-      targetForm.setFieldsValue({ [fieldName]: loadEvent.target.result });
-    };
-    reader.readAsDataURL(file);
   };
 
   const [activeTab, setActiveTab] = useState('products');
@@ -221,23 +229,23 @@ export default function CatalogManagementPage() {
           }
         } else {
           const payload = {
-            name: values.name,
-            slug: values.slug || undefined,
+            name: values.name.trim(),
+            slug: values.slug?.trim() || undefined,
             categoryId: values.categoryId,
             brandId: values.brandId,
             productType: values.productType,
-            description: values.description,
+            description: values.description.trim(),
             status: values.status || 'ACTIVE'
           };
           if (values.initialSku && values.initialPrice !== undefined && values.initialCostPrice !== undefined) {
             payload.variants = [{
-              sku: values.initialSku,
-              barcode: values.initialBarcode || values.initialSku,
-              name: values.initialVariantName || values.name,
-              color: values.initialColor,
+              sku: values.initialSku.trim(),
+              barcode: (values.initialBarcode || values.initialSku).trim(),
+              name: (values.initialVariantName || values.name).trim(),
+              color: values.initialColor?.trim() || undefined,
               price: values.initialPrice,
               costPrice: values.initialCostPrice,
-              imageUrl: values.initialImageUrl,
+              imageUrl: values.initialImageUrl?.trim() || DEFAULT_PRODUCT_IMAGE,
               status: 'ACTIVE'
             }];
           }
@@ -926,7 +934,14 @@ export default function CatalogManagementPage() {
                 <Input placeholder="Tự động sinh nếu để trống (ví dụ: gong-kinh-bolon-bj3120)" maxLength={255} />
               </Form.Item>
 
-              <Form.Item name="description" label="Mô tả sản phẩm">
+              <Form.Item
+                name="description"
+                label="Mô tả sản phẩm"
+                rules={[
+                  { required: true, whitespace: true, message: 'Vui lòng nhập mô tả sản phẩm.' },
+                  { min: 5, message: 'Mô tả sản phẩm cần tối thiểu 5 ký tự.' }
+                ]}
+              >
                 <Input.TextArea rows={3} placeholder="Mô tả chất liệu, tính năng nổi bật..." />
               </Form.Item>
 
@@ -936,6 +951,10 @@ export default function CatalogManagementPage() {
                     name="initialImageUrl"
                     label="Hình ảnh sản phẩm (URL hoặc tải từ máy)"
                     tooltip="Nhập URL ảnh từ internet hoặc bấm nút tải ảnh từ máy tính"
+                    rules={[
+                      { required: !modal.record, whitespace: true, message: 'Vui lòng nhập link ảnh hoặc tải ảnh sản phẩm.' },
+                      { validator: validateImageField }
+                    ]}
                   >
                     <Input
                       placeholder="https://images.unsplash.com/... hoặc chọn tệp"
@@ -1000,23 +1019,38 @@ export default function CatalogManagementPage() {
               {!modal.record && (
                 <>
                   <Divider plain className="text-xs text-slate-500 font-semibold">
-                    Khởi tạo biến thể đầu tiên (Tùy chọn)
+                    Khởi tạo biến thể đầu tiên (Bắt buộc)
                   </Divider>
                   <Row gutter={16}>
                     <Col span={12}>
-                      <Form.Item name="initialSku" label="Mã SKU ban đầu">
+                      <Form.Item
+                        name="initialSku"
+                        label="Mã SKU ban đầu"
+                        rules={[{ required: true, whitespace: true, message: 'Vui lòng nhập mã SKU.' }, { max: 100 }]}
+                      >
                         <Input placeholder="Ví dụ: BL-BJ3120-C10" maxLength={100} />
                       </Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Form.Item name="initialBarcode" label="Mã Barcode">
-                        <Input placeholder="Tự sinh hoặc quét mã vạch" maxLength={100} />
+                      <Form.Item
+                        name="initialBarcode"
+                        label="Mã Barcode"
+                        rules={[{ required: true, whitespace: true, message: 'Vui lòng nhập mã Barcode.' }, { max: 100 }]}
+                      >
+                        <Input placeholder="Ví dụ: 893850123499" maxLength={100} />
                       </Form.Item>
                     </Col>
                   </Row>
                   <Row gutter={16}>
                     <Col span={12}>
-                      <Form.Item name="initialPrice" label="Giá bán (VND)">
+                      <Form.Item
+                        name="initialPrice"
+                        label="Giá bán (VND)"
+                        rules={[
+                          { required: true, message: 'Vui lòng nhập giá bán.' },
+                          { type: 'number', min: 1000, message: 'Giá bán tối thiểu là 1,000 đ.' }
+                        ]}
+                      >
                         <InputNumber
                           min={0}
                           style={{ width: '100%' }}
@@ -1027,7 +1061,14 @@ export default function CatalogManagementPage() {
                       </Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Form.Item name="initialCostPrice" label="Giá vốn (VND)">
+                      <Form.Item
+                        name="initialCostPrice"
+                        label="Giá vốn (VND)"
+                        rules={[
+                          { required: true, message: 'Vui lòng nhập giá vốn.' },
+                          { type: 'number', min: 0, message: 'Giá vốn không được âm.' }
+                        ]}
+                      >
                         <InputNumber
                           min={0}
                           style={{ width: '100%' }}
@@ -1236,6 +1277,10 @@ export default function CatalogManagementPage() {
                 name="imageUrl"
                 label="Hình ảnh biến thể (URL hoặc tải từ máy)"
                 tooltip="Nhập URL ảnh từ internet hoặc bấm nút tải ảnh từ máy tính"
+                rules={[
+                  { required: true, whitespace: true, message: 'Vui lòng nhập URL ảnh hoặc tải ảnh biến thể.' },
+                  { validator: validateImageField }
+                ]}
               >
                 <Input
                   placeholder="https://images.unsplash.com/... hoặc chọn tệp"
