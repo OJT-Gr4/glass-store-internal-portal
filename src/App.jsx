@@ -49,7 +49,7 @@ export default function App() {
       }}
     >
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             {/* Public Login Route (redirects to workspace if already logged in) */}
             <Route
