@@ -9,12 +9,16 @@ function shortName(product) {
 
 export function ProductImage({ product }) {
   const [failed, setFailed] = useState(false);
+  const fallbackImg = product.category === 'SUNGLASSES'
+    ? 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=500&q=80'
+    : 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=500&q=80';
+
   if (product.category === 'LENS') return <div className="pos-product-image pos-lens-art" role="img" aria-label={`Minh họa tròng kính: ${product.name}`}>
     <svg viewBox="0 0 240 140" aria-hidden="true"><ellipse cx="85" cy="78" rx="52" ry="35" fill="#e3edf2" stroke="#bacdd7" strokeWidth="2" transform="rotate(-18 85 78)" /><ellipse cx="153" cy="73" rx="52" ry="35" fill="#f4f8fb" fillOpacity=".85" stroke="#bacdd7" strokeWidth="2" transform="rotate(18 153 73)" /><path d="M119 60 Q150 42 177 69 M50 81 Q58 57 89 56" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" /></svg>
   </div>;
   if (product.category === 'ACCESSORY') return <div className="pos-product-image pos-accessory-art" role="img" aria-label={`Minh họa phụ kiện: ${product.name}`}><span className="material-symbols-outlined" aria-hidden="true">{product.sku.includes('CLEANER') ? 'cleaning_services' : 'cases'}</span></div>;
   return <div className="pos-product-image">
-    {(!product.image || failed) ? <span className="material-symbols-outlined" aria-hidden="true">eyeglasses</span> : <img src={product.image} alt={product.name} loading="lazy" onError={() => setFailed(true)} />}
+    <img src={(!product.image || failed) ? fallbackImg : product.image} alt={product.name} loading="lazy" onError={() => setFailed(true)} />
   </div>;
 }
 

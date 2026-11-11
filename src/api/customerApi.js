@@ -60,6 +60,16 @@ export const customerApi = {
   },
 
   /**
+   * Xóa khách hàng khỏi hệ thống
+   */
+  async deleteCustomer(id) {
+    const res = await apiFetch(`/api/users/${id}`, {
+      method: 'DELETE',
+    });
+    return res?.data;
+  },
+
+  /**
    * Thêm tương tác / ghi chú chăm sóc mới (S3-04)
    * @param {number|string} customerId
    * @param {Object} data { channel, content }

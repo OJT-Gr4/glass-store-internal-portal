@@ -12,7 +12,7 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
       </button>}</header>
     <div className="pos-checkout-body" aria-disabled={paying} inert={paying ? '' : undefined}><div className="pos-checkout-scroll">
-      <div className="pos-customer"><span className="material-symbols-outlined" aria-hidden="true">person</span><div><strong>{customer.name}</strong>{customer.phone && <p>{customer.phone}</p>}</div>
+      <div className="pos-customer"><span className="material-symbols-outlined" aria-hidden="true">person</span><div><strong>{customer.name}</strong>{customer.phone && <p>{customer.phone}</p>}{customer.id && loyalty && <p style={{ fontSize: '11px', color: '#0369a1', fontWeight: 600, marginTop: '2px' }}>{loyalty.tier || customer.tier || 'Thành Viên'} · {Number(loyalty.balance || 0).toLocaleString('vi-VN')} điểm</p>}</div>
         <button type="button" onClick={onCustomer}>Đổi khách</button>{customer.id && <button type="button" onClick={onGuest}>Vãng lai</button>}</div>
       <div className="pos-cart-items">{!cart.length ? <div className="pos-cart-empty"><span className="material-symbols-outlined" aria-hidden="true">shopping_bag</span><strong>Chưa có sản phẩm</strong><p>Chọn kính hoặc quét mã để bắt đầu đơn hàng.</p></div> : cart.map(item =>
         <div className="pos-cart-item" key={item.sku} data-cart-sku={item.sku}>
@@ -20,7 +20,7 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
           <div className="pos-cart-description"><strong>{item.name.split(' - ')[0]}</strong><span className="pos-sku">{item.sku}</span>
             {item.quantity > (products.find(p => p.sku === item.sku)?.stockQuantity ?? 0) && (
               <span style={{ color: '#b91c1c', fontSize: '11px', fontWeight: 600, display: 'block' }}>
-                ⚠️ Vượt tồn kho ({products.find(p => p.sku === item.sku)?.stockQuantity ?? 0})
+                Vượt tồn kho ({products.find(p => p.sku === item.sku)?.stockQuantity ?? 0})
               </span>
             )}
             <div className="pos-cart-item-bottom"><div className="pos-stepper"><button type="button" aria-label={`Giảm ${item.name}`} onClick={() => onQuantity(item.sku, -1)}>−</button><span>{item.quantity}</span><button type="button" aria-label={`Tăng ${item.name}`} onClick={() => onQuantity(item.sku, 1)}>+</button></div><strong>{money(item.price * item.quantity)}</strong></div>
@@ -32,7 +32,7 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
       {offerError && <p role="alert" className="pos-offer-error">{offerError}</p>}
       {offerPending && !offerError && <p role="status" className="pos-offer-error">Đang kiểm tra giá và ưu đãi…</p>}
       </div>
-      <dl className="pos-totals"><div><dt>Tạm tính</dt><dd>{money(subtotal)}</dd></div>{Number(offer?.voucherDiscount)>0 && <div><dt>Voucher {offer.voucherCode}</dt><dd>−{money(offer.voucherDiscount)}</dd></div>}{Number(offer?.pointsDiscount)>0 && <div><dt>Dùng {offer.redeemedPoints} điểm</dt><dd>−{money(offer.pointsDiscount)}</dd></div>}<div><dt>Tiền tính thuế</dt><dd>{money(offer?.taxableAmount ?? Math.max(0, subtotal - discount))}</dd></div><div><dt>VAT (8%)</dt><dd>{money(tax)}</dd></div><div className="pos-total"><dt>Tổng thanh toán</dt><dd>{money(total)}</dd></div></dl>
+      <dl className="pos-totals"><div><dt>Tạm tính</dt><dd>{money(subtotal)}</dd></div>{Number(offer?.voucherDiscount)>0 && <div><dt>Voucher {offer.voucherCode}</dt><dd>−{money(offer.voucherDiscount)}</dd></div>}{Number(offer?.pointsDiscount)>0 && <div><dt>Dùng {offer.redeemedPoints} điểm</dt><dd>−{money(offer.pointsDiscount)}</dd></div>}<div><dt>Tiền tính thuế</dt><dd>{money(offer?.taxableAmount ?? Math.max(0, subtotal - discount))}</dd></div><div><dt>VAT (8%)</dt><dd>{money(tax)}</dd></div><div className="pos-total"><dt>Tổng thanh toán</dt><dd>{money(total)}</dd></div>{customer.id && total > 0 && <div style={{ color: '#059669', fontWeight: 600, fontSize: '12px', paddingTop: '4px' }}><dt>Điểm tích lũy cộng thêm (1.000đ = 1đ)</dt><dd>+{Math.floor(total / Number(loyalty?.earnUnitAmount || 1000)).toLocaleString('vi-VN')} điểm</dd></div>}</dl>
       <section className="pos-payment" ref={paymentRef} tabIndex={-1} aria-label="Thanh toán">
         <div className="pos-payment-methods">{[['cash', 'payments', 'Tiền mặt'], ['vietqr', 'qr_code_2', 'Chuyển khoản'], ['card', 'credit_card', 'Thẻ']].map(([value, icon, label]) => <button type="button" key={value} aria-pressed={method === value} onClick={() => setMethod(value)}><span className="material-symbols-outlined" aria-hidden="true">{icon}</span>{label}</button>)}</div>
         {method === 'cash' ? (
@@ -66,7 +66,7 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
                   cursor: 'pointer'
                 }}
               >
-                ⚡ SePay Sandbox (Tự động)
+                SePay Sandbox (Tự động)
               </button>
               <button
                 type="button"
@@ -84,7 +84,7 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
                   cursor: 'pointer'
                 }}
               >
-                🏦 Chuyển khoản thủ công
+                Chuyển khoản thủ công
               </button>
             </div>
 
@@ -98,7 +98,7 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
                 color: '#0369a1',
                 lineHeight: 1.4
               }}>
-                <strong>⚡ Cổng SePay VietQR Sandbox</strong>
+                <strong>Cổng SePay VietQR Sandbox</strong>
                 <p style={{ margin: '3px 0 0', color: '#0c4a6e', fontSize: '11px' }}>
                   Hệ thống tự động hiển thị mã VietQR và đối soát real-time ngay khi khách chuyển tiền.
                 </p>

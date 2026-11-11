@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { message, Modal, Spin, Select, Input } from 'antd';
 import { customerApi } from '../../api/customerApi';
+import { promotionApi } from '../../api/promotionApi';
 
 export default function CrmPage() {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
@@ -59,15 +60,48 @@ export default function CrmPage() {
     };
   };
 
+  const resolveTierStyle = (tierName) => {
+    if (tierName?.includes('Platinum')) return 'bg-primary-fixed text-on-primary-fixed';
+    if (tierName?.includes('Gold')) return 'bg-secondary-fixed text-on-secondary-fixed';
+    if (tierName?.includes('Silver')) return 'bg-surface-container-high text-on-surface';
+    return 'bg-surface-container text-on-surface';
+  };
+
+  const enrichCustomersWithLoyalty = async (customers) => {
+    try {
+      const results = await Promise.allSettled(
+        customers.map(c => promotionApi.account(c.dbId))
+      );
+      return customers.map((c, i) => {
+        const res = results[i];
+        if (res.status === 'fulfilled' && res.value) {
+          const bal = Number(res.value.balance ?? 0);
+          const tier = res.value.tier || c.tier;
+          return {
+            ...c,
+            balance: bal,
+            pts: `${bal.toLocaleString('vi-VN')} điểm`,
+            tier,
+            tierClass: resolveTierStyle(tier)
+          };
+        }
+        return c;
+      });
+    } catch {
+      return customers;
+    }
+  };
+
   const loadCustomers = async () => {
     try {
       setLoading(true);
       const data = await customerApi.getCustomerList();
       if (Array.isArray(data) && data.length > 0) {
         const mapped = data.map(mapCustomer);
-        setCustomerList(mapped);
-        if (!selectedCustomerId || !mapped.some(c => c.id === selectedCustomerId)) {
-          setSelectedCustomerId(mapped[0].id);
+        const enriched = await enrichCustomersWithLoyalty(mapped);
+        setCustomerList(enriched);
+        if (!selectedCustomerId || !enriched.some(c => c.id === selectedCustomerId)) {
+          setSelectedCustomerId(enriched[0].id);
         }
       } else {
         setCustomerList([]);
@@ -321,7 +355,7 @@ export default function CrmPage() {
             </div>
             <div className="mt-2 pt-2 border-t border-[#e7eeff] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
               <span className="material-symbols-outlined text-emerald-600 text-[14px]">check_circle</span>
-              <span className="truncate text-outline text-[11px]">Đồng bộ từ MySQL db_identity</span>
+              <span className="truncate text-outline text-[11px]">Dữ liệu khách hàng thực tế</span>
             </div>
           </div>
 
@@ -333,7 +367,7 @@ export default function CrmPage() {
                   <span className="font-display-lg text-display-lg text-secondary tracking-tight">
                     {customerList.filter(c => c.marketingConsent).length}
                   </span>
-                  <span className="font-label-md text-label-md text-outline font-bold">Opt-in</span>
+                  <span className="font-label-md text-label-md text-outline font-bold">Thành viên</span>
                 </div>
               </div>
               <div className="w-8 h-8 rounded-lg bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center">
@@ -342,7 +376,7 @@ export default function CrmPage() {
             </div>
             <div className="mt-2 pt-2 border-t border-[#e7eeff] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
               <span className="material-symbols-outlined text-outline text-[14px]">verified_user</span>
-              <span className="truncate text-outline text-[11px]">Tuân thủ Consent FR-CUS-04</span>
+              <span className="truncate text-outline text-[11px]">Đồng ý nhận tin khuyến mãi</span>
             </div>
           </div>
 
@@ -409,7 +443,7 @@ export default function CrmPage() {
                   Tất cả ({customerList.length})
                 </button>
                 <button className="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high shrink-0 transition-colors cursor-pointer text-xs">
-                  Consent Opt-in ({customerList.filter(c => c.marketingConsent).length})
+                  Nhận tin tiếp thị ({customerList.filter(c => c.marketingConsent).length})
                 </button>
               </div>
             </div>
@@ -462,12 +496,12 @@ export default function CrmPage() {
                               </span>
                             </div>
                             <div className="font-label-mono text-body-sm text-outline">
-                              {item.id} • {item.gender}
+                              {item.id} • <span className="text-primary font-semibold">{item.pts}</span>
                             </div>
                           </div>
                         </div>
                         {item.marketingConsent ? (
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-label-mono text-[9px] font-semibold">Consent ✓</span>
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-label-mono text-[9px] font-semibold">SMS ✓</span>
                         ) : (
                           <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-label-mono text-[9px]">Chưa opt-in</span>
                         )}
@@ -528,6 +562,7 @@ export default function CrmPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-headline-md text-headline-md text-on-surface font-bold">{activeCustomer.name}</span>
                         <span className="px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-md text-label-md font-semibold">{activeCustomer.tier}</span>
+                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-label-md text-label-md font-bold">★ {activeCustomer.pts}</span>
                         <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-mono text-[11px]">{activeCustomer.id}</span>
                       </div>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-body-sm font-body-sm text-on-surface-variant">
@@ -589,6 +624,32 @@ export default function CrmPage() {
                         <span className="material-symbols-outlined text-[15px]">edit</span>
                         Sửa Hồ Sơ
                       </button>
+                      <button
+                        onClick={() => {
+                          Modal.confirm({
+                            title: `Xóa khách hàng ${activeCustomer.name}?`,
+                            content: 'Thao tác này sẽ xóa hồ sơ khách hàng khỏi hệ thống nếu chưa có dữ liệu ràng buộc hóa đơn, hoặc vô hiệu hóa tài khoản.',
+                            okText: 'Xác nhận xóa',
+                            okType: 'danger',
+                            cancelText: 'Hủy',
+                            onOk: async () => {
+                              try {
+                                await customerApi.deleteCustomer(activeCustomer.id);
+                                message.success(`Đã xóa khách hàng: ${activeCustomer.name}`);
+                                const updated = customerList.filter(c => c.id !== activeCustomer.id);
+                                setCustomerList(updated);
+                                if (updated.length > 0) setActiveCustomer(updated[0]);
+                              } catch (err) {
+                                message.error(`Không thể xóa: ${err.message || 'Lỗi hệ thống'}`);
+                              }
+                            }
+                          });
+                        }}
+                        className="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg font-label-md text-label-md flex items-center gap-1 transition-colors cursor-pointer text-xs font-semibold"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">delete</span>
+                        Xóa
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -597,8 +658,8 @@ export default function CrmPage() {
               {/* Profile Tabs */}
               <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-[#d8e3fb]/40 overflow-x-auto whitespace-nowrap">
                 {[
-                  { id: 'rx', label: 'Hồ Sơ Thị Lực & Biểu Đồ OD/OS (FR-CUS-05)', icon: 'biotech' },
-                  { id: 'notes', label: `Nhật Ký Chăm Sóc CRM & Ghi Chú (${interactions.length})`, icon: 'support_agent' }
+                  { id: 'rx', label: 'Hồ Sơ Thị Lực & Biểu Đồ OD/OS', icon: 'biotech' },
+                  { id: 'notes', label: `Nhật Ký Chăm Sóc CRM (${interactions.length})`, icon: 'support_agent' }
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -720,7 +781,7 @@ export default function CrmPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="font-title-md text-title-md text-on-surface font-semibold block">Lịch Sử Toa Kính &amp; Hồ Sơ Lâm Sàng</span>
-                        <span className="font-body-sm text-body-sm text-outline">Bảo toàn vĩnh viễn theo chuẩn Y Khoa NFR-SEC-04</span>
+                        <span className="font-body-sm text-body-sm text-outline">Bảo toàn lịch sử đo khám nhãn khoa</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button onClick={() => handleAction('Đã gửi lệnh in sổ khám A5 ra máy in')} className="px-2.5 py-1 bg-surface-container text-on-surface rounded-lg text-label-md font-label-md flex items-center gap-1 hover:bg-surface-container-high transition-all cursor-pointer">
@@ -836,7 +897,7 @@ export default function CrmPage() {
                   className="mt-0.5 accent-primary"
                 />
                 <span className="text-slate-700 font-medium">
-                  Khách hàng đồng ý nhận thông tin tiếp thị, khuyến mãi và chăm sóc thị lực qua SMS/Zalo (FR-CUS-04).
+                  Khách hàng đồng ý nhận thông tin tiếp thị, khuyến mãi và chăm sóc thị lực qua SMS/Zalo.
                 </span>
               </label>
             </div>
@@ -915,7 +976,7 @@ export default function CrmPage() {
                   className="mt-0.5 accent-primary"
                 />
                 <span className="text-slate-700 font-medium">
-                  Khách hàng đồng ý nhận thông tin tiếp thị, khuyến mãi và chăm sóc thị lực qua SMS/Zalo (FR-CUS-04).
+                  Khách hàng đồng ý nhận thông tin tiếp thị, khuyến mãi và chăm sóc thị lực qua SMS/Zalo.
                 </span>
               </label>
             </div>

@@ -271,46 +271,6 @@ export default function AuthPage({ onLoginSuccess }) {
             </button>
           </div>
 
-          {/* Quick Demo Fill Buttons for Testing */}
-          {authMode === 'login' && (
-            <div className="mb-4 p-2.5 rounded-xl bg-sky-50/70 border border-sky-200">
-              <div className="text-[11px] font-bold text-[#004967] mb-1.5 flex items-center justify-between">
-                <span>⚡ Chọn nhanh tài khoản kiểm thử:</span>
-                <span className="text-[10px] text-slate-500 font-mono">Pass: 123456</span>
-              </div>
-              <div className="grid grid-cols-4 gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => { setStaffId('admin'); setPassword('123456'); }}
-                  className={`py-1.5 px-1 rounded-lg text-[11px] font-bold transition text-center ${staffId === 'admin' ? 'bg-[#004967] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'}`}
-                >
-                  Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setStaffId('staff'); setPassword('123456'); }}
-                  className={`py-1.5 px-1 rounded-lg text-[11px] font-bold transition text-center ${staffId === 'staff' ? 'bg-[#004967] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'}`}
-                >
-                  Thu ngân
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setStaffId('optometrist'); setPassword('123456'); }}
-                  className={`py-1.5 px-1 rounded-lg text-[11px] font-bold transition text-center ${staffId === 'optometrist' ? 'bg-[#004967] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'}`}
-                >
-                  Khúc xạ
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setStaffId('labtech'); setPassword('123456'); }}
-                  className={`py-1.5 px-1 rounded-lg text-[11px] font-bold transition text-center ${staffId === 'labtech' ? 'bg-[#004967] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'}`}
-                >
-                  KTV Lab
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Department Select (Register mode only) */}
           {authMode === 'register' && (
             <div className="flex flex-col gap-1.5 mb-5">

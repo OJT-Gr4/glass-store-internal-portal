@@ -416,7 +416,7 @@ export default function PosHistoryModal({
                             {order.customerName || 'Khách vãng lai'}
                           </span>
                           <span className="text-[11px] text-slate-500">
-                            {order.customerPhone ? `📞 ${order.customerPhone}` : 'Không có SĐT'}
+                            {order.customerPhone ? order.customerPhone : 'Không có SĐT'}
                           </span>
                           {order.customerId && (
                             <span className="inline-block mt-0.5 text-[10px] px-1.5 py-0.2 rounded bg-sky-50 text-sky-700 border border-sky-200">
@@ -492,12 +492,12 @@ export default function PosHistoryModal({
 
                           {isRefundPending && (
                             <div className="text-[10px] text-amber-700 font-semibold mt-0.5">
-                              ⚠️ Chờ hoàn tiền
+                              Chờ hoàn tiền
                             </div>
                           )}
                           {isRefundConfirmed && (
                             <div className="text-[10px] text-purple-700 font-semibold mt-0.5">
-                              ✓ Đã hoàn tiền
+                              Đã hoàn tiền
                             </div>
                           )}
                         </td>

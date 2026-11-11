@@ -401,7 +401,7 @@ export default function StaffRbacPage() {
                 <span className="text-xs text-[#70787f]">chờ duyệt</span>
               </div>
               <span className={`text-[11px] font-semibold ${pendingStaff.length > 0 ? 'text-amber-700 animate-pulse' : 'text-emerald-600'}`}>
-                {pendingStaff.length > 0 ? '⚠️ Cần Admin phê duyệt' : '✓ Đã xử lý tất cả'}
+                {pendingStaff.length > 0 ? 'Cần Admin phê duyệt' : 'Đã xử lý tất cả'}
               </span>
             </div>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
@@ -467,7 +467,7 @@ export default function StaffRbacPage() {
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">notifications_active</span>
-              <span>Cấu Hình Kênh Thông Báo (FR-ADM-10)</span>
+              <span>Cấu Hình Kênh Thông Báo</span>
             </button>
           </div>
         </div>
@@ -621,7 +621,7 @@ export default function StaffRbacPage() {
               <div>
                 <h3 className="text-sm font-bold text-[#004967] flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
-                  <span>Hồ Sơ Đăng Ký Chờ Phê Duyệt Cấp Quyền (FR-ADM-01)</span>
+                  <span>Hồ Sơ Đăng Ký Chờ Phê Duyệt Cấp Quyền</span>
                 </h3>
                 <p className="text-xs text-[#70787f] mt-0.5">
                   Các yêu cầu tạo tài khoản gửi từ form Đăng Ký Mới của Cổng Nội Bộ. Admin duyệt để kích hoạt hoặc từ chối hồ sơ.
@@ -725,7 +725,7 @@ export default function StaffRbacPage() {
           <div className="bg-white rounded-xl border border-[#d8e3fb]/40 shadow-sm overflow-hidden flex flex-col">
             <div className="p-4 bg-[#f0f3ff]/50 border-b border-[#e7eeff] flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-[#004967]">Ma Trận Phân Quyền Chi Tiết Theo Phân Hệ (FR-ADM-02)</h3>
+                <h3 className="text-sm font-bold text-[#004967]">Ma Trận Phân Quyền Chi Tiết Theo Phân Hệ</h3>
                 <p className="text-xs text-[#70787f]">Quy định quyền truy cập &amp; tác nghiệp của từng nhóm chức danh nhân sự trong chuỗi</p>
               </div>
               <span className="text-xs font-mono text-[#004967] bg-[#dee8ff] px-2 py-1 rounded">5 Phân Hệ Tác Nghiệp</span>
@@ -788,7 +788,7 @@ export default function StaffRbacPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e7eeff]">
               <div>
                 <h3 className="text-sm font-bold text-[#004967]">
-                  Cấu Hình Kênh Thông Báo Giao Dịch &amp; Chu Kỳ Polling (FR-ADM-10 / GLAS-25)
+                  Cấu Hình Kênh Thông Báo Giao Dịch &amp; Chu Kỳ Polling
                 </h3>
                 <p className="text-xs text-[#70787f] mt-0.5">
                   In-App + Polling là kênh cam kết chính thức. SMS/Email chỉ đánh dấu Đã gửi (SENT) khi cổng ngoài phản hồi HTTP 2xx — không tính In-App là đã gửi SMS.

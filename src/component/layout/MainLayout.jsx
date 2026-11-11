@@ -199,7 +199,7 @@ export default function MainLayout() {
       items: [
         {
           key: '/pos',
-          label: 'POS Thu Ngân (FR-POS)',
+          label: 'POS Bán hàng & Thu ngân',
           icon: 'point_of_sale',
           allowedRoles: [ROLES.ADMIN, ROLES.POS]
         },
@@ -217,7 +217,7 @@ export default function MainLayout() {
       items: [
         {
           key: '/optometry-appointments',
-          label: 'Lịch hẹn đo mắt (FR-EYE)',
+          label: 'Lịch hẹn đo khúc xạ',
           icon: 'calendar_month',
           allowedRoles: [ROLES.ADMIN, ROLES.OPTOMETRY]
         },
@@ -235,7 +235,7 @@ export default function MainLayout() {
       items: [
         {
           key: '/lab',
-          label: 'Điều phối mài lắp (FR-LAB)',
+          label: 'Điều phối mài lắp kính',
           icon: 'precision_manufacturing',
           allowedRoles: [ROLES.ADMIN, ROLES.LAB]
         },
@@ -253,7 +253,7 @@ export default function MainLayout() {
       items: [
         {
           key: '/inventory',
-          label: 'Tồn kho chi nhánh (FR-INV)',
+          label: 'Tồn kho chi nhánh',
           icon: 'inventory_2',
           allowedRoles: [ROLES.ADMIN, ROLES.LAB]
         },
@@ -277,13 +277,13 @@ export default function MainLayout() {
       items: [
         {
           key: '/crm',
-          label: 'Hồ sơ CRM (FR-CRM)',
+          label: 'Hồ sơ khách hàng CRM',
           icon: 'badge',
           allowedRoles: [ROLES.ADMIN, ROLES.POS, ROLES.OPTOMETRY]
         },
         {
           key: '/warranty',
-          label: 'Phiếu BH & Đổi trả (FR-WAR)',
+          label: 'Phiếu bảo hành & Đổi trả',
           icon: 'assignment_return',
           allowedRoles: [ROLES.ADMIN, ROLES.POS]
         }
@@ -295,13 +295,13 @@ export default function MainLayout() {
       items: [
         {
           key: '/reports',
-          label: 'Báo cáo KPIs (FR-REP)',
+          label: 'Báo cáo doanh thu & KPIs',
           icon: 'analytics',
           allowedRoles: [ROLES.ADMIN]
         },
         {
           key: '/settings',
-          label: 'Cấu hình hệ thống (FR-ADM)',
+          label: 'Cấu hình hệ thống & Phân quyền',
           icon: 'settings',
           allowedRoles: [ROLES.ADMIN]
         },
@@ -636,7 +636,7 @@ export default function MainLayout() {
                 }}
                 className="font-bold text-[#004967] hover:underline cursor-pointer"
               >
-                Mở cấu hình FR-ADM-10 →
+                Mở cấu hình kênh thông báo →
               </button>
             </div>
           )}

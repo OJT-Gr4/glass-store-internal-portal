@@ -304,27 +304,9 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
           {mode === 'login' ? (
             /* ================= LOGIN FORM FOR STAFF ================= */
             <div>
-              <div className="optivision-staff-title-group">
+              <div className="optivision-staff-title-group" style={{ marginBottom: 16 }}>
                 <h2>Đăng Nhập Cổng Nội Bộ</h2>
-                <p>Xác thực chứng danh nhân sự y khoa & chuỗi bán lẻ</p>
-              </div>
-
-              {/* Quick Role Switcher */}
-              <div style={{ marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#475569', letterSpacing: 0.6, textTransform: 'uppercase' }}>
-                  CHỌN PHÂN HỆ TÁC NGHIỆP NHANH
-                </span>
-                <div className="optivision-staff-role-bar">
-                  {Object.values(ROLE_CONFIGS).map((item) => (
-                    <div
-                      key={item.key}
-                      className={`optivision-staff-role-item ${selectedRole === item.key ? 'active' : ''}`}
-                      onClick={() => handleRoleChange(item.key)}
-                    >
-                      {item.name}
-                    </div>
-                  ))}
-                </div>
+                <p>Hệ thống quản lý tác nghiệp chuỗi kính mắt OptiVision</p>
               </div>
 
               <form onSubmit={handleLoginSubmit}>
@@ -332,7 +314,6 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 <div className="optivision-staff-field">
                   <div className="optivision-staff-field-label-row">
                     <span>Cơ sở / Chi nhánh làm việc <span style={{ color: '#ef4444' }}>*</span></span>
-                    <span className="hint" style={{ fontFamily: 'monospace' }}>ISO-LOC-2026</span>
                   </div>
                   <select
                     className="optivision-staff-select"
@@ -350,15 +331,14 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 {/* Staff ID */}
                 <div className="optivision-staff-field">
                   <div className="optivision-staff-field-label-row">
-                    <span>Mã định danh nhân viên (Staff ID) <span style={{ color: '#ef4444' }}>*</span></span>
-                    <span className="hint">Định dạng NV-OPT-XXXXXX</span>
+                    <span>Tài khoản / Email / Mã nhân viên <span style={{ color: '#ef4444' }}>*</span></span>
                   </div>
                   <input
                     type="text"
                     className="optivision-staff-input"
                     value={staffId}
                     onChange={(e) => setStaffId(e.target.value)}
-                    placeholder="NV-OPT-XXXXXX"
+                    placeholder="Nhập email, username hoặc mã nhân viên..."
                     required
                   />
                 </div>
@@ -366,10 +346,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 {/* Password */}
                 <div className="optivision-staff-field">
                   <div className="optivision-staff-field-label-row">
-                    <span>Mật khẩu tài khoản nội bộ <span style={{ color: '#ef4444' }}>*</span></span>
-                    <span style={{ color: '#086288', fontSize: 11, fontWeight: 600 }}>
-                      <CheckCircleOutlined /> Mã hóa SHA-256
-                    </span>
+                    <span>Mật khẩu <span style={{ color: '#ef4444' }}>*</span></span>
                   </div>
                   <div style={{ position: 'relative' }}>
                     <input

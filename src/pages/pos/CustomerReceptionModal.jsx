@@ -199,8 +199,8 @@ export default function CustomerReceptionModal({
                       )}
                     </div>
                     <div className="text-[11px] text-[#70787f] flex items-center gap-2 mt-0.5">
-                      <span>📞 {c.phoneNumber || 'Chưa có SĐT'}</span>
-                      {c.email && <span className="truncate">✉️ {c.email}</span>}
+                      <span>{c.phoneNumber || 'Chưa có SĐT'}</span>
+                      {c.email && <span className="truncate">• {c.email}</span>}
                     </div>
                   </div>
                   <button

@@ -278,27 +278,9 @@ export default function LoginPage({ onLoginSuccess }) {
           {mode === 'login' ? (
             /* ================= LOGIN FORM FOR STAFF (Image 2) ================= */
             <div>
-              <div style={{ marginBottom: 12 }}>
+              <div style={{ marginBottom: 16 }}>
                 <h2 className="optivision-form-header-title">Đăng Nhập Cổng Nội Bộ</h2>
-                <p className="optivision-form-header-desc">Xác thực chứng danh nhân sự y khoa & chuỗi bán lẻ</p>
-              </div>
-
-              {/* Quick Role Switcher */}
-              <div className="optivision-role-container">
-                <span className="optivision-role-header-label">
-                  CHỌN PHÂN HỆ TÁC NGHIỆP NHANH
-                </span>
-                <div className="optivision-role-tab-bar">
-                  {Object.values(ROLE_CONFIGS).map((item) => (
-                    <div
-                      key={item.key}
-                      className={`optivision-role-item ${selectedRole === item.key ? 'active' : ''}`}
-                      onClick={() => handleRoleChange(item.key)}
-                    >
-                      {item.name}
-                    </div>
-                  ))}
-                </div>
+                <p className="optivision-form-header-desc">Hệ thống quản lý tác nghiệp chuỗi kính mắt OptiVision</p>
               </div>
 
               <form onSubmit={handleLoginSubmit}>
@@ -306,7 +288,6 @@ export default function LoginPage({ onLoginSuccess }) {
                 <div className="optivision-form-row">
                   <div className="optivision-label-row">
                     <span>Cơ sở / Chi nhánh làm việc <span style={{ color: '#ef4444' }}>*</span></span>
-                    <span className="hint-text" style={{ fontFamily: 'monospace' }}>ISO-LOC-2026</span>
                   </div>
                   <select
                     className="optivision-form-select"
@@ -325,14 +306,13 @@ export default function LoginPage({ onLoginSuccess }) {
                 <div className="optivision-form-row">
                   <div className="optivision-label-row">
                     <span>Tài khoản / Email / Mã nhân viên <span style={{ color: '#ef4444' }}>*</span></span>
-                    <span className="hint-text">Email, username hoặc Staff ID</span>
                   </div>
                   <input
                     type="text"
                     className="optivision-form-input"
                     value={staffId}
                     onChange={(e) => setStaffId(e.target.value)}
-                    placeholder="admin, email hoặc mã nhân viên..."
+                    placeholder="Nhập email, username hoặc mã nhân viên..."
                     required
                   />
                 </div>
@@ -340,10 +320,7 @@ export default function LoginPage({ onLoginSuccess }) {
                 {/* Password */}
                 <div className="optivision-form-row">
                   <div className="optivision-label-row">
-                    <span>Mật khẩu tài khoản nội bộ <span style={{ color: '#ef4444' }}>*</span></span>
-                    <span style={{ color: '#086288', fontSize: 11, fontWeight: 600 }}>
-                      <CheckCircleOutlined /> Mã hóa SHA-256
-                    </span>
+                    <span>Mật khẩu <span style={{ color: '#ef4444' }}>*</span></span>
                   </div>
                   <div style={{ position: 'relative' }}>
                     <input

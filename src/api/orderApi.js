@@ -25,8 +25,12 @@ export const orderApi = {
   }),
   getOrderHistory: (id) => requestOrder(`/api/orders/${id}/history`),
   initiatePayment: (orderId, provider) => requestOrder(`/api/payments/order/${orderId}/initiate${provider ? `?provider=${encodeURIComponent(provider)}` : ''}`, { method: 'POST' }),
-  syncPayment: (orderId) => requestOrder(`/api/payments/order/${orderId}/sync`, { method: 'POST' }),
+  syncPayment: (orderId) => requestOrder(`/api/payments/order/${orderId}`),
   getPaymentHistory: (orderId) => requestOrder(`/api/payments/order/${orderId}`),
+  simulateSandboxPayment: (orderCode) => requestOrder(`/api/payments/sandbox/simulate-callback?orderCode=${encodeURIComponent(orderCode)}`, { method: 'POST' }),
   settleCash: (orderId) => requestOrder(`/api/orders/${orderId}/settle-cash`, { method: 'POST' }),
-  getSepayConfig: () => requestOrder('/api/payments/sepay/configuration')
+  getSepayConfig: () => requestOrder('/api/payments/sepay/configuration'),
+  generateVietQr: (orderCode) => requestOrder(`/api/payments/vietqr/generate?orderCode=${encodeURIComponent(orderCode)}`, { method: 'POST' }),
+  triggerVietQrTestCallback: (orderCode) => requestOrder(`/api/payments/vietqr/test-callback?orderCode=${encodeURIComponent(orderCode)}`, { method: 'POST' }),
+  getVietQrConfigInfo: () => requestOrder('/api/payments/vietqr/config-info')
 };
