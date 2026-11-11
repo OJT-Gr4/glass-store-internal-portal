@@ -3,12 +3,12 @@ import { message } from 'antd';
 import { inventoryApi } from '../../api/inventoryApi';
 import {
   buildTransferPayload,
-  getQuantityAtLocation,
+  getSellableQuantityAtLocation,
   validateTransferForm
 } from './stockTransferUtils';
 
 const STATUS_LABELS = {
-  PENDING: 'Chờ xác nhận nhận',
+  PENDING: 'Chờ xuất kho',
   IN_TRANSIT: 'Đang vận chuyển',
   RECEIVED: 'Đã nhận'
 };
@@ -100,9 +100,7 @@ export default function StockTransferPage() {
       if (!response?.data?.transferCode) {
         throw new Error('Máy chủ chưa trả về thông tin phiếu điều chuyển.');
       }
-      message.success(`Đã tạo phiếu ${response.data.transferCode} ở trạng thái chờ xác nhận nhận hàng.`);
-      window.dispatchEvent(new CustomEvent('inventory-changed'));
-      try { localStorage.setItem('optivision_last_inventory_sync', Date.now().toString()); } catch {}
+      message.success(`Đã tạo phiếu ${response.data.transferCode}. Cần xuất kho để bắt đầu điều chuyển.`);
       setLines([emptyLine()]);
       setReason('');
       setActiveTab('transfers');
@@ -119,10 +117,13 @@ export default function StockTransferPage() {
     if (workingTransferId !== null) return;
     setWorkingTransferId(transfer.id);
     try {
-      await inventoryApi.receiveTransfer(transfer.id);
-      message.success(`Đã xác nhận nhận hàng cho phiếu ${transfer.transferCode}.`);
-      window.dispatchEvent(new CustomEvent('inventory-changed'));
-      try { localStorage.setItem('optivision_last_inventory_sync', Date.now().toString()); } catch {}
+      if (transfer.status === 'PENDING') {
+        await inventoryApi.dispatchTransfer(transfer.id);
+        message.success(`Đã xuất kho cho phiếu ${transfer.transferCode}.`);
+      } else {
+        await inventoryApi.receiveTransfer(transfer.id);
+        message.success(`Đã xác nhận nhận hàng cho phiếu ${transfer.transferCode}.`);
+      }
       await loadData();
     } catch (actionError) {
       message.error(actionError.message || 'Không thể cập nhật phiếu điều chuyển.');
@@ -200,7 +201,7 @@ export default function StockTransferPage() {
                       <th scope="col" className="px-3 py-3">Tuyến kho</th>
                       <th scope="col" className="px-3 py-3">Sản phẩm</th>
                       <th scope="col" className="px-3 py-3">Ngày tạo</th>
-                      <th scope="col" className="px-3 py-3">Người tạo / nhận</th>
+                      <th scope="col" className="px-3 py-3">Người tạo / xuất / nhận</th>
                       <th scope="col" className="px-3 py-3">Trạng thái</th>
                       <th scope="col" className="px-3 py-3 text-right">Thao tác</th>
                     </tr>
@@ -220,6 +221,7 @@ export default function StockTransferPage() {
                         </td>
                         <td className="px-3 py-3 text-slate-600">
                           {transfer.createdBy || '—'}
+                          {transfer.dispatchedBy ? ` / ${transfer.dispatchedBy}` : ''}
                           {transfer.receivedBy ? ` / ${transfer.receivedBy}` : ''}
                         </td>
                         <td className="whitespace-nowrap px-3 py-3">
@@ -243,7 +245,7 @@ export default function StockTransferPage() {
                             >
                               {workingTransferId === transfer.id
                                 ? 'Đang cập nhật…'
-                                : 'Xác nhận nhận hàng'}
+                                : transfer.status === 'PENDING' ? 'Xuất kho' : 'Xác nhận nhận hàng'}
                             </button>
                           )}
                         </td>
@@ -365,7 +367,7 @@ export default function StockTransferPage() {
               {lines.map((line, index) => {
                 const selectedProduct = inventoryBySku.get(line.sku);
                 const available = selectedProduct
-                  ? getQuantityAtLocation(selectedProduct, sourceLocationCode)
+                  ? getSellableQuantityAtLocation(selectedProduct, sourceLocationCode)
                   : 0;
                 return (
                   <div key={index} className="grid gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[minmax(0,1fr)_140px_auto]">
@@ -385,13 +387,13 @@ export default function StockTransferPage() {
                             disabled={lines.some((otherLine, otherIndex) =>
                               otherIndex !== index && otherLine.sku === item.sku)}
                           >
-                            {item.sku} — {item.productName} ({sourceLocationCode || 'Nguồn'}: {getQuantityAtLocation(item, sourceLocationCode)})
+                            {item.sku} — {item.productName} ({sourceLocationCode || 'Nguồn'}: {getSellableQuantityAtLocation(item, sourceLocationCode)} bán được)
                           </option>
                         ))}
                       </select>
                       {line.sku && (
                         <span className="mt-1 block text-xs text-slate-500">
-                          Tồn tại kho nguồn: {available}
+                          Tồn bán được tại kho nguồn: {available}
                         </span>
                       )}
                     </label>
@@ -423,7 +425,7 @@ export default function StockTransferPage() {
             </div>
 
             <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
-              Phiếu mới ở trạng thái PENDING và chưa làm thay đổi tồn. Khi xác nhận nhận hàng, máy chủ sẽ kiểm tra lại tồn kho nguồn và cập nhật cả hai kho trong cùng giao dịch.
+              Phiếu mới ở trạng thái PENDING và chưa làm thay đổi tồn. Xuất kho sẽ trừ tồn bán được tại kho nguồn; xác nhận nhận hàng mới cộng tồn tại kho đích.
             </p>
 
             <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
