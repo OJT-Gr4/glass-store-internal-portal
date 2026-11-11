@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { message, Modal, Spin, Select, Input } from 'antd';
 import { customerApi } from '../../api/customerApi';
+import { promotionApi } from '../../api/promotionApi';
 
 export default function CrmPage() {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
@@ -59,15 +60,48 @@ export default function CrmPage() {
     };
   };
 
+  const resolveTierStyle = (tierName) => {
+    if (tierName?.includes('Platinum')) return 'bg-primary-fixed text-on-primary-fixed';
+    if (tierName?.includes('Gold')) return 'bg-secondary-fixed text-on-secondary-fixed';
+    if (tierName?.includes('Silver')) return 'bg-surface-container-high text-on-surface';
+    return 'bg-surface-container text-on-surface';
+  };
+
+  const enrichCustomersWithLoyalty = async (customers) => {
+    try {
+      const results = await Promise.allSettled(
+        customers.map(c => promotionApi.account(c.dbId))
+      );
+      return customers.map((c, i) => {
+        const res = results[i];
+        if (res.status === 'fulfilled' && res.value) {
+          const bal = Number(res.value.balance ?? 0);
+          const tier = res.value.tier || c.tier;
+          return {
+            ...c,
+            balance: bal,
+            pts: `${bal.toLocaleString('vi-VN')} điểm`,
+            tier,
+            tierClass: resolveTierStyle(tier)
+          };
+        }
+        return c;
+      });
+    } catch {
+      return customers;
+    }
+  };
+
   const loadCustomers = async () => {
     try {
       setLoading(true);
       const data = await customerApi.getCustomerList();
       if (Array.isArray(data) && data.length > 0) {
         const mapped = data.map(mapCustomer);
-        setCustomerList(mapped);
-        if (!selectedCustomerId || !mapped.some(c => c.id === selectedCustomerId)) {
-          setSelectedCustomerId(mapped[0].id);
+        const enriched = await enrichCustomersWithLoyalty(mapped);
+        setCustomerList(enriched);
+        if (!selectedCustomerId || !enriched.some(c => c.id === selectedCustomerId)) {
+          setSelectedCustomerId(enriched[0].id);
         }
       } else {
         setCustomerList([]);
@@ -462,7 +496,7 @@ export default function CrmPage() {
                               </span>
                             </div>
                             <div className="font-label-mono text-body-sm text-outline">
-                              {item.id} • {item.gender}
+                              {item.id} • <span className="text-primary font-semibold">{item.pts}</span>
                             </div>
                           </div>
                         </div>
@@ -528,6 +562,7 @@ export default function CrmPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-headline-md text-headline-md text-on-surface font-bold">{activeCustomer.name}</span>
                         <span className="px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-md text-label-md font-semibold">{activeCustomer.tier}</span>
+                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-label-md text-label-md font-bold">★ {activeCustomer.pts}</span>
                         <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-mono text-[11px]">{activeCustomer.id}</span>
                       </div>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-body-sm font-body-sm text-on-surface-variant">

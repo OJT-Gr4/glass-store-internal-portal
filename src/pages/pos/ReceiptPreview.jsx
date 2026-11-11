@@ -43,6 +43,7 @@ export default function ReceiptPreview({ order, open, onClose }) {
         <div><dt>Tiền tính thuế</dt><dd>{money(Number(order.totalAmount)-Number(order.discountAmount||0))}</dd></div>
         <div><dt>VAT 8%</dt><dd>{money(order.taxAmount)}</dd></div>
         <div className="pos-receipt-total"><dt>TỔNG THANH TOÁN</dt><dd>{money(order.finalAmount)}</dd></div>
+        {order.customerId && order.status !== 'CANCELLED' && <div><dt>Điểm tích lũy cộng thêm</dt><dd>+{Math.floor(Number(order.finalAmount || 0) / 1000).toLocaleString('vi-VN')} điểm</dd></div>}
         <div><dt>Phương thức</dt><dd>{{ CASH: 'Tiền mặt', VIETQR: 'VietQR', SEPAY: 'Cổng SePay', CARD: 'Thẻ POS' }[order.paymentMethod] || order.paymentMethod}</dd></div>
         {cashGiven != null && <><div><dt>Tiền khách đưa</dt><dd>{money(cashGiven)}</dd></div>
           <div><dt>Tiền thừa</dt><dd>{money(cashGiven - Number(order.finalAmount))}</dd></div></>}

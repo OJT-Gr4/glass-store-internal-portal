@@ -511,13 +511,15 @@ export default function PosSepayModal({
                   backgroundColor: syncing ? '#10b981' : '#3b82f6',
                   boxShadow: syncing ? '0 0 6px #10b981' : 'none'
                 }} />
-                <span style={{ fontSize: '12px', color: '#334155', fontWeight: 500 }}>
+                <span style={{ fontSize: '12px', color: '#475569', fontWeight: 500 }}>
                   {syncing ? 'Đang kiểm tra biến động số dư VietQR...' : 'Đang chờ VietQR callback xác thực'}
                 </span>
               </div>
-              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                {lastSyncTime ? `Đã đồng bộ ${lastSyncTime.toLocaleTimeString('vi-VN')}` : 'Tự động kiểm tra mỗi 2s'}
-              </span>
+              {lastSyncTime && (
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  Cập nhật: {lastSyncTime.toLocaleTimeString('vi-VN')}
+                </span>
+              )}
             </div>
           </div>
         </div>
