@@ -4,6 +4,7 @@ import { QRCode } from 'antd';
 import { CheckOutlined, CopyOutlined, CheckCircleFilled, QrcodeOutlined, ApiOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { orderApi } from '../../api/orderApi';
 import { money } from './ProductCatalog';
+import { copyToClipboard } from '../../utils/browserSafe';
 
 // EMVCo QR Code CRC16-CCITT generator for Napas 247 standard
 function crc16(data) {
@@ -192,7 +193,7 @@ export default function PosSepayModal({
   // Copy to clipboard helper
   const handleCopy = (text, key) => {
     if (!text) return;
-    navigator.clipboard.writeText(String(text));
+    copyToClipboard(text);
     setCopiedKey(key);
     message.success({ content: `Đã sao chép: ${text}`, duration: 1 });
     setTimeout(() => setCopiedKey(null), 2000);

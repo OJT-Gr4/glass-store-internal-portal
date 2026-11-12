@@ -21,6 +21,7 @@ import { useAuth } from '../../context/AuthContext';
 import { inventoryApi } from '../../api/inventoryApi';
 import { stockVoucherApi } from '../../api/stockVoucherApi';
 import { ROLES } from '../../routes/rolesConfig';
+import { createUuid } from '../../utils/browserSafe';
 
 const VOUCHER_TYPES = {
   RECEIPT: 'Nhập kho',
@@ -39,7 +40,7 @@ const emptySupplier = {
   address: ''
 };
 
-const makeIdempotencyKey = () => window.crypto.randomUUID();
+const makeIdempotencyKey = () => createUuid();
 
 export default function StockVouchersPage() {
   const { user } = useAuth();

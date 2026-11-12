@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { message } from 'antd';
+import { createUuid } from '../../utils/browserSafe';
 
 export default function useHeldCarts(staffId, branchCode) {
   const key = `optivision.pos.held.v1:${staffId || 'unknown'}:${branchCode || 'none'}`;
@@ -17,7 +18,7 @@ export default function useHeldCarts(staffId, branchCode) {
   function hold(cart, customer, voucherCode, pointsToUse, linkedRx) {
     if (!branchCode || !staffId) throw new Error('Chọn chi nhánh và đăng nhập trước khi lưu tạm.');
     if (!cart.length) throw new Error('Giỏ hàng đang trống.');
-    const draft = { id: crypto.randomUUID(), savedAt: new Date().toISOString(), branchCode,
+    const draft = { id: createUuid(), savedAt: new Date().toISOString(), branchCode,
       customer: customer ? { id: customer.id ?? null, name: customer.name, phone: customer.phone, tier: customer.tier } : null,
       voucherCode, pointsToUse, prescriptionId: linkedRx?.id, prescriptionCode: linkedRx?.code,
       linkedRx: linkedRx ? { ...linkedRx } : null,
