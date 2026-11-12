@@ -1,4 +1,4 @@
-import React from 'react';
+ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -49,7 +49,7 @@ export default function App() {
       }}
     >
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             {/* Public Login Route (redirects to workspace if already logged in) */}
             <Route

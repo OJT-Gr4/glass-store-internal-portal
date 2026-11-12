@@ -29,6 +29,22 @@ export const staffApi = {
     return res?.data;
   },
 
+  async updateStaff(id, data) {
+    const res = await apiFetch(`/api/users/staff/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return res?.data;
+  },
+
+  async updateAvatar(id, avatarUrl) {
+    const res = await apiFetch(`/api/users/${id}/avatar`, {
+      method: 'PUT',
+      body: JSON.stringify({ avatarUrl }),
+    });
+    return res?.data;
+  },
+
   /**
    * Đổi trạng thái kích hoạt / phê duyệt / khóa nhân viên
    * @param {number} id

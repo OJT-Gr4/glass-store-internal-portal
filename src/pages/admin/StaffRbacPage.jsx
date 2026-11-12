@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { message, Modal, Spin, Switch, Tag } from 'antd';
 import { staffApi } from '../../api/staffApi';
 import { notificationApi } from '../../api/notificationApi';
+import { compressImageToDataUrl, DEFAULT_AVATAR_URL, isValidImageInput } from '../../utils/imageUploadUtils';
 
 // Roles definition
 const ROLES_LIST = [
@@ -86,6 +87,7 @@ export default function StaffRbacPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [editingStaff, setEditingStaff] = useState(null);
+  const [savingStaffEdit, setSavingStaffEdit] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newStaff, setNewStaff] = useState({
     name: '',
@@ -93,7 +95,8 @@ export default function StaffRbacPage() {
     phone: '',
     branch: 'Flagship Q.1',
     roleCode: 'cashier',
-    roleName: 'Thu Ngân POS & Bán Lẻ'
+    roleName: 'Thu Ngân POS & Bán Lẻ',
+    avatarUrl: DEFAULT_AVATAR_URL
   });
 
   // Map roles from backend
@@ -151,6 +154,7 @@ export default function StaffRbacPage() {
             status: normStatus === 'active' ? 'active' : (normStatus === 'pending' ? 'pending' : 'locked'),
             lastActive: normStatus === 'pending' ? 'Chờ duyệt cấp quyền' : 'Trực tuyến hôm nay',
             avatar: initials,
+            avatarUrl: u.avatarUrl || DEFAULT_AVATAR_URL,
             color: roleInfo.color,
             createdAt: u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : 'Mới đăng ký',
             permissions: ['pos_create', 'stock_view']
@@ -277,28 +281,86 @@ export default function StaffRbacPage() {
   };
 
   const handleCreateStaff = async () => {
-    if (!newStaff.name.trim() || !newStaff.email.trim()) {
-      message.error('Vui lòng nhập họ tên và email nhân viên');
+    if (!newStaff.name.trim()) {
+      message.error('Vui lòng nhập họ tên nhân viên.');
+      return;
+    }
+    if (!newStaff.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newStaff.email.trim())) {
+      message.error('Vui lòng nhập email nội bộ hợp lệ.');
+      return;
+    }
+    if (!newStaff.phone.trim() || !/^0\d{8,10}$/.test(newStaff.phone.trim())) {
+      message.error('Vui lòng nhập số điện thoại hợp lệ (9–11 chữ số, bắt đầu bằng số 0).');
+      return;
+    }
+    if (!newStaff.branch.trim()) {
+      message.error('Vui lòng nhập chi nhánh làm việc.');
+      return;
+    }
+    if (newStaff.avatarUrl?.trim() && !isValidImageInput(newStaff.avatarUrl)) {
+      message.error('Link ảnh đại diện không hợp lệ.');
       return;
     }
     const newId = `STF-0${Math.floor(100 + Math.random() * 900)}`;
 
     try {
       const created = await staffApi.createStaff({
-        fullName: newStaff.name,
-        email: newStaff.email,
-        phoneNumber: newStaff.phone || '0901000000',
-        branchName: newStaff.branch,
+        fullName: newStaff.name.trim(),
+        email: newStaff.email.trim(),
+        phoneNumber: newStaff.phone.trim(),
+        branchName: newStaff.branch.trim(),
         employeeCode: newId,
         roleName: mapCodeToBackendRole(newStaff.roleCode),
+        avatarUrl: newStaff.avatarUrl?.trim() || DEFAULT_AVATAR_URL,
         status: 'ACTIVE'
       });
       setIsAddModalOpen(false);
-      setNewStaff({ name: '', email: '', phone: '', branch: 'Flagship Q.1', roleCode: 'cashier', roleName: 'Thu Ngân POS & Bán Lẻ' });
+      setNewStaff({
+        name: '',
+        email: '',
+        phone: '',
+        branch: 'Flagship Q.1',
+        roleCode: 'cashier',
+        roleName: 'Thu Ngân POS & Bán Lẻ',
+        avatarUrl: DEFAULT_AVATAR_URL
+      });
       message.success(`Tạo mới hồ sơ nhân sự ${created?.fullName || newStaff.name} (${newId}) thành công!`);
       await loadStaff();
     } catch (err) {
       message.error(`Lỗi tạo nhân sự: ${err.message}`);
+    }
+  };
+
+  const handleSaveStaffEdit = async () => {
+    if (!editingStaff) return;
+    if (!editingStaff.name?.trim()) {
+      message.error('Họ và tên không được để trống.');
+      return;
+    }
+    if (!editingStaff.phone?.trim() || !/^0\d{8,10}$/.test(editingStaff.phone.trim())) {
+      message.error('Số điện thoại phải gồm 9–11 chữ số và bắt đầu bằng số 0.');
+      return;
+    }
+    if (editingStaff.avatarUrl?.trim() && !isValidImageInput(editingStaff.avatarUrl)) {
+      message.error('Ảnh đại diện không đúng định dạng link ảnh.');
+      return;
+    }
+    setSavingStaffEdit(true);
+    try {
+      await staffApi.updateStaff(editingStaff.dbId, {
+        fullName: editingStaff.name.trim(),
+        phoneNumber: editingStaff.phone.trim(),
+        branchName: editingStaff.branch?.trim() || 'Flagship Q.1 (TP.HCM)',
+        roleName: mapCodeToBackendRole(editingStaff.roleCode),
+        avatarUrl: editingStaff.avatarUrl?.trim() || DEFAULT_AVATAR_URL
+      });
+      message.success(`Đã lưu cập nhật nhân sự ${editingStaff.name} thành công!`);
+      setEditingStaff(null);
+      await loadStaff();
+    } catch (err) {
+      message.error(`Không thể cập nhật nhân viên: ${err.message}`);
+    } finally {
+      setSavingStaffEdit(false);
     }
   };
 
@@ -530,9 +592,15 @@ export default function StaffRbacPage() {
                     <tr key={staff.id} className="hover:bg-[#f0f3ff]/60 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-full ${staff.color} font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm`}>
-                            {staff.avatar}
-                          </div>
+                          <img
+                            src={staff.avatarUrl || DEFAULT_AVATAR_URL}
+                            alt={staff.name}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = DEFAULT_AVATAR_URL;
+                            }}
+                            className="w-9 h-9 rounded-full object-cover border border-[#cde5f5] bg-slate-50 flex-shrink-0 shadow-sm"
+                          />
                           <div>
                             <div className="font-semibold text-[13px] text-[#111c2d] flex items-center gap-1.5">
                               {staff.name}
@@ -664,9 +732,15 @@ export default function StaffRbacPage() {
                       <tr key={staff.id} className="hover:bg-amber-50/40 transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-amber-500 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
-                              {staff.avatar}
-                            </div>
+                            <img
+                              src={staff.avatarUrl || DEFAULT_AVATAR_URL}
+                              alt={staff.name}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = DEFAULT_AVATAR_URL;
+                              }}
+                              className="w-9 h-9 rounded-full object-cover border border-amber-200 bg-white flex-shrink-0 shadow-sm"
+                            />
                             <div>
                               <div className="font-semibold text-[13px] text-[#111c2d] flex items-center gap-1.5">
                                 {staff.name}
@@ -952,7 +1026,7 @@ export default function StaffRbacPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Chi nhánh làm việc</label>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Chi nhánh làm việc *</label>
               <input
                 type="text"
                 placeholder="Flagship Q.1 (TP.HCM)"
@@ -961,45 +1035,169 @@ export default function StaffRbacPage() {
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#004967]"
               />
             </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Ảnh đại diện (Mặc định hoặc link / tải từ máy)</label>
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={newStaff.avatarUrl || DEFAULT_AVATAR_URL}
+                  alt="Avatar preview"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = DEFAULT_AVATAR_URL;
+                  }}
+                  className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
+                />
+                <input
+                  type="text"
+                  value={newStaff.avatarUrl?.startsWith('data:image/') ? '' : (newStaff.avatarUrl || '')}
+                  onChange={e => setNewStaff({ ...newStaff, avatarUrl: e.target.value })}
+                  placeholder={newStaff.avatarUrl?.startsWith('data:image/') ? 'Đã tải ảnh từ máy' : 'https://...'}
+                  className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#004967]"
+                />
+                <label className="px-2.5 py-2 rounded-lg bg-[#e7eeff] hover:bg-[#dee8ff] text-[#004967] text-xs font-bold cursor-pointer shrink-0">
+                  Tải ảnh
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        const compressed = await compressImageToDataUrl(file, 256, 0.85);
+                        setNewStaff((prev) => ({ ...prev, avatarUrl: compressed }));
+                      } catch (err) {
+                        message.error(err.message);
+                      } finally {
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
           </div>
         </Modal>
 
-        {/* Modal Chỉnh Sửa Phân Quyền */}
+        {/* Modal Chỉnh Sửa Nhân Viên & Phân Quyền */}
         {editingStaff && (
           <Modal
-            title={`Phân Quyền &amp; Cập Nhật: ${editingStaff.name}`}
+            title={`Phân Quyền & Cập Nhật: ${editingStaff.name}`}
             open={!!editingStaff}
-            onOk={() => {
-              message.success(`Đã lưu cấu hình phân quyền cho ${editingStaff.name} thành công!`);
-              setEditingStaff(null);
-            }}
-            onCancel={() => setEditingStaff(null)}
+            onOk={handleSaveStaffEdit}
+            confirmLoading={savingStaffEdit}
+            onCancel={() => !savingStaffEdit && setEditingStaff(null)}
             okText="Lưu Thay Đổi"
             cancelText="Đóng"
           >
             <div className="flex flex-col gap-3 pt-2 text-xs">
-              <div className="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-slate-800">{editingStaff.name} ({editingStaff.id})</div>
-                  <div className="text-slate-500">{editingStaff.email} • {editingStaff.branch}</div>
+              <div className="p-3 bg-slate-50 rounded-lg flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={editingStaff.avatarUrl || DEFAULT_AVATAR_URL}
+                    alt={editingStaff.name}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = DEFAULT_AVATAR_URL;
+                    }}
+                    className="w-11 h-11 rounded-full object-cover border border-[#cde5f5] shrink-0"
+                  />
+                  <div>
+                    <div className="font-bold text-slate-800">{editingStaff.name} ({editingStaff.id})</div>
+                    <div className="text-slate-500">{editingStaff.email}</div>
+                  </div>
                 </div>
                 <span className="px-2 py-1 bg-[#dee8ff] text-[#004967] rounded font-semibold">{editingStaff.roleName}</span>
               </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Họ và tên *</label>
+                  <input
+                    type="text"
+                    value={editingStaff.name}
+                    onChange={(e) => setEditingStaff((prev) => ({ ...prev, name: e.target.value }))}
+                    className="w-full p-2 border border-slate-300 rounded text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Số điện thoại *</label>
+                  <input
+                    type="text"
+                    value={editingStaff.phone}
+                    onChange={(e) => setEditingStaff((prev) => ({ ...prev, phone: e.target.value }))}
+                    className="w-full p-2 border border-slate-300 rounded text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Chi nhánh làm việc:</label>
+                <input
+                  type="text"
+                  value={editingStaff.branch}
+                  onChange={(e) => setEditingStaff((prev) => ({ ...prev, branch: e.target.value }))}
+                  className="w-full p-2 border border-slate-300 rounded text-xs"
+                />
+              </div>
+
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Đổi vai trò chức danh:</label>
                 <select
-                  defaultValue={editingStaff.roleCode}
+                  value={editingStaff.roleCode}
                   onChange={(e) => {
                     const r = ROLES_LIST.find(x => x.code === e.target.value);
-                    setStaffList(prev => prev.map(s => s.id === editingStaff.id ? { ...s, roleCode: e.target.value, roleName: r?.label || s.roleName } : s));
+                    setEditingStaff((prev) => ({ ...prev, roleCode: e.target.value, roleName: r?.label || prev.roleName }));
                   }}
-                  className="w-full p-2 border rounded text-xs"
+                  className="w-full p-2 border border-slate-300 rounded text-xs"
                 >
                   <option value="cashier">Thu Ngân POS &amp; Bán Lẻ</option>
                   <option value="optometrist">Bác Sĩ / KTV Khúc Xạ (CCHN)</option>
                   <option value="lab_tech">Kỹ Thuật Viên Xưởng Lab</option>
                   <option value="admin">Quản Trị Viên (Admin)</option>
                 </select>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-slate-700">Ảnh đại diện (Link URL hoặc tải tệp)</label>
+                  <button
+                    type="button"
+                    onClick={() => setEditingStaff((prev) => ({ ...prev, avatarUrl: DEFAULT_AVATAR_URL }))}
+                    className="text-[11px] text-[#086288] underline cursor-pointer"
+                  >
+                    Mặc định
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={editingStaff.avatarUrl?.startsWith('data:image/') ? '' : (editingStaff.avatarUrl || '')}
+                    onChange={(e) => setEditingStaff((prev) => ({ ...prev, avatarUrl: e.target.value }))}
+                    placeholder={editingStaff.avatarUrl?.startsWith('data:image/') ? 'Đã tải ảnh từ máy' : 'https://...'}
+                    className="flex-1 p-2 border border-slate-300 rounded text-xs"
+                  />
+                  <label className="px-3 py-2 rounded bg-[#e7eeff] hover:bg-[#dee8ff] text-[#004967] font-bold cursor-pointer shrink-0">
+                    Tải ảnh
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          const compressed = await compressImageToDataUrl(file, 256, 0.85);
+                          setEditingStaff((prev) => ({ ...prev, avatarUrl: compressed }));
+                        } catch (err) {
+                          message.error(err.message);
+                        } finally {
+                          e.target.value = '';
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
             </div>
           </Modal>

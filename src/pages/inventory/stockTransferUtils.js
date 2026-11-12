@@ -3,6 +3,15 @@ export function getQuantityAtLocation(inventoryItem, locationCode) {
   return Number.isFinite(quantity) && quantity >= 0 ? quantity : 0;
 }
 
+export function getSellableQuantityAtLocation(inventoryItem, locationCode) {
+  const quantity = Number(
+    inventoryItem?.sellableQuantities?.[locationCode]
+      ?? inventoryItem?.quantities?.[locationCode]
+      ?? 0
+  );
+  return Number.isFinite(quantity) && quantity >= 0 ? quantity : 0;
+}
+
 export function validateTransferForm({ sourceLocationCode, destinationLocationCode, locations, lines, inventory }) {
   if (!locations.some((location) => location.code === sourceLocationCode)) {
     return 'Vui lòng chọn kho nguồn hợp lệ.';
@@ -29,7 +38,7 @@ export function validateTransferForm({ sourceLocationCode, destinationLocationCo
   }
   if (items.some((item) => {
     const product = inventory.find((entry) => entry.sku === item.sku);
-    return !product || item.quantity > getQuantityAtLocation(product, sourceLocationCode);
+    return !product || item.quantity > getSellableQuantityAtLocation(product, sourceLocationCode);
   })) {
     return 'Số lượng điều chuyển vượt tồn hiện tại tại kho nguồn.';
   }

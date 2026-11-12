@@ -20,28 +20,24 @@ import usePosPayment from './usePosPayment';
 import CustomerReceptionModal from './CustomerReceptionModal';
 import PosHistoryModal from './PosHistoryModal';
 import PosSepayModal from './PosSepayModal';
+import { getPosSellableQuantity, resolvePosBranchCode } from './posInventoryUtils';
 
 export default function PosPage() {
   const { user } = useAuth();
   const { selectedBranch, locations } = useOutletContext() || {};
-
-  const branchCode = useMemo(() => {
-    if (!selectedBranch) return 'BRANCH_01';
-    const s = String(selectedBranch).trim().toUpperCase();
-    if (s === 'BRANCH_01' || s.includes('BRANCH_01') || s.includes('CHI NHÁNH 01') || s.includes('01')) return 'BRANCH_01';
-    if (s === 'BRANCH_02' || s.includes('BRANCH_02') || s.includes('CHI NHÁNH 02') || s.includes('02')) return 'BRANCH_02';
-    if (s === 'LAB' || s.includes('LAB')) return 'LAB';
-    return s;
-  }, [selectedBranch]);
-
-  const selectedLocation = useMemo(() => {
-    return locations?.find(l => l.code === branchCode) || {
-      code: branchCode,
-      name: branchCode === 'BRANCH_01' ? 'Chi nhánh 01 - Lê Thánh Tôn' : branchCode === 'BRANCH_02' ? 'Chi nhánh 02 - Tràng Tiền (HN)' : (branchCode === 'LAB' ? 'Tổng kho Lab' : (selectedBranch || 'Chi nhánh 01'))
-    };
+  const branchCode = resolvePosBranchCode(selectedBranch);
+  const branchName = useMemo(() => {
+    return (
+      locations?.find((l) => l.code === branchCode)?.name
+      || (branchCode === 'BRANCH_01'
+        ? 'Chi nhánh 01'
+        : branchCode === 'BRANCH_02'
+          ? 'Chi nhánh 02'
+          : branchCode === 'LAB'
+            ? 'Tổng kho Lab'
+            : selectedBranch || 'Chi nhánh 01')
+    );
   }, [locations, branchCode, selectedBranch]);
-
-  const branchName = selectedLocation.name;
   const [catalogVersion, setCatalogVersion] = useState(0);
   const [lastOrder, setLastOrder] = useState(null);
   const [receiptOpen, setReceiptOpen] = useState(false);
@@ -171,17 +167,25 @@ export default function PosPage() {
     let active = true;
     const fetchLiveCatalog = async () => {
       setCatalogLoading(true); setCatalogError('');
+      if (!branchCode) {
+        setCatalogProducts([]);
+        setCatalogError('POS chỉ hỗ trợ bán hàng tại Chi nhánh 01 hoặc Chi nhánh 02. Hãy chọn đúng chi nhánh trên thanh điều hướng.');
+        setCatalogLoading(false);
+        return;
+      }
       try {
         const [res, stockResponse] = await Promise.all([productApi.getAllProducts(), inventoryApi.getInventory()]);
         if (!active) return;
-        const inventoryRows = Array.isArray(stockResponse?.data) ? stockResponse.data : (Array.isArray(stockResponse) ? stockResponse : []);
-        const products = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
-        if (products.length > 0) {
+        const inventoryRows = stockResponse.data || stockResponse;
+        const inventoryBySku = new Map(
+          (Array.isArray(inventoryRows) ? inventoryRows : []).map(row => [row.sku, row])
+        );
+        const products = res?.data || res;
+        if (Array.isArray(products) && products.length > 0) {
           const list = [];
           products.forEach(p => {
             if (p.variants && p.variants.length > 0) {
               p.variants.forEach(v => {
-                const stockQty = inventoryRows.find(row => row.sku === v.sku)?.quantities?.[branchCode] ?? 0;
                 list.push({
                   sku: v.sku || ('SKU-' + v.id),
                   barcode: v.barcode || '',
@@ -190,9 +194,9 @@ export default function PosPage() {
                   brand: p.brandName || 'OptiVision',
                   category: p.productType,
                   price: Number(v.price ?? 0),
-                  stockQuantity: stockQty,
-                  stock: `${stockQty} cái`,
-                  image: v.imageUrl || 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=500&q=80'
+                  stockQuantity: getPosSellableQuantity(inventoryBySku.get(v.sku), branchCode),
+                  stock: getPosSellableQuantity(inventoryBySku.get(v.sku), branchCode) + ' cái',
+                  image: v.imageUrl || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvIuZeIWL8lzCvG6kGgNUCAlk_ov0naBVuipn8z44eFg&s=10'
                 });
               });
             }

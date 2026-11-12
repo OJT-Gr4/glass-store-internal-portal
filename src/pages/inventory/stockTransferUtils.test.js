@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   buildTransferPayload,
   getQuantityAtLocation,
+  getSellableQuantityAtLocation,
   validateTransferForm
 } from './stockTransferUtils.js';
 
@@ -12,7 +13,8 @@ const locations = [
 ];
 const inventory = [{
   sku: 'FRAME-001',
-  quantities: { LAB: 20, BRANCH_01: 5 }
+  quantities: { LAB: 20, BRANCH_01: 5 },
+  sellableQuantities: { LAB: 18, BRANCH_01: 4 }
 }];
 
 function form(sourceLocationCode = 'LAB', destinationLocationCode = 'BRANCH_01', quantity = '3') {
@@ -27,9 +29,10 @@ function form(sourceLocationCode = 'LAB', destinationLocationCode = 'BRANCH_01',
 
 test('validates transfers in either direction against selected source stock', () => {
   assert.equal(validateTransferForm(form()), null);
-  assert.equal(validateTransferForm(form('BRANCH_01', 'LAB', '5')), null);
+  assert.equal(validateTransferForm(form('BRANCH_01', 'LAB', '4')), null);
   assert.equal(getQuantityAtLocation(inventory[0], 'BRANCH_01'), 5);
-  assert.equal(validateTransferForm(form('BRANCH_01', 'LAB', '6')), 'Số lượng điều chuyển vượt tồn hiện tại tại kho nguồn.');
+  assert.equal(getSellableQuantityAtLocation(inventory[0], 'BRANCH_01'), 4);
+  assert.equal(validateTransferForm(form('BRANCH_01', 'LAB', '5')), 'Số lượng điều chuyển vượt tồn hiện tại tại kho nguồn.');
 });
 
 test('requires distinct valid locations and positive integer quantities', () => {

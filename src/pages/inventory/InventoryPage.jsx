@@ -1,12 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { inventoryApi } from '../../api/inventoryApi';
+import { useAuth } from '../../context/AuthContext';
+import { ROLES } from '../../routes/rolesConfig';
 import { isLowStock } from './inventoryUtils';
-
-const DEFAULT_LOCATIONS = [
-  { code: 'BRANCH_01', label: 'Chi nhánh 01' },
-  { code: 'BRANCH_02', label: 'Chi nhánh 02' },
-  { code: 'LAB', label: 'Tổng kho Lab' }
-];
 
 const CATEGORY_LABELS = {
   FRAME: 'Gọng kính',
@@ -16,32 +12,37 @@ const CATEGORY_LABELS = {
 };
 
 const quantityAt = (item, locationCode) => Number(item.quantities?.[locationCode] ?? 0);
+const sellableQuantityAt = (item, locationCode) => Number(
+  item.sellableQuantities?.[locationCode] ?? quantityAt(item, locationCode)
+);
 
 export default function InventoryPage() {
+  const { user } = useAuth();
   const [inventory, setInventory] = useState([]);
-  const [locations, setLocations] = useState(DEFAULT_LOCATIONS);
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('ALL');
+  const [reconciliation, setReconciliation] = useState(null);
+  const [reconciliationLoading, setReconciliationLoading] = useState(false);
+  const [reconciliationError, setReconciliationError] = useState('');
 
   const loadInventory = useCallback(async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
-      const [inventoryRes, locationsRes] = await Promise.all([
+      const [response, locationsResponse] = await Promise.all([
         inventoryApi.getInventory(),
-        inventoryApi.getLocations().catch(() => null)
+        inventoryApi.getLocations()
       ]);
-      if (!Array.isArray(inventoryRes?.data)) {
+      if (!Array.isArray(response?.data) || !Array.isArray(locationsResponse?.data)) {
         throw new Error('Dữ liệu tồn kho từ máy chủ không hợp lệ.');
       }
-      setInventory(inventoryRes.data);
-      if (Array.isArray(locationsRes?.data) && locationsRes.data.length > 0) {
-        setLocations(locationsRes.data.map(loc => ({
-          code: loc.code,
-          label: loc.name || loc.code
-        })));
-      }
+      setInventory(response.data);
+      setLocations(locationsResponse.data.map((location) => ({
+        code: location.code,
+        label: location.name
+      })));
       setError('');
     } catch (loadError) {
       setError(loadError.message || 'Không thể tải dữ liệu tồn kho.');
@@ -49,6 +50,24 @@ export default function InventoryPage() {
       if (showLoading) setLoading(false);
     }
   }, []);
+
+  const reconcileInventory = async () => {
+    setReconciliationLoading(true);
+    setReconciliationError('');
+    try {
+      const response = await inventoryApi.getReconciliation();
+      if (!response?.data
+          || !Array.isArray(response.data.balanceVariances)
+          || !Array.isArray(response.data.transferVariances)) {
+        throw new Error('Dữ liệu đối soát từ máy chủ không hợp lệ.');
+      }
+      setReconciliation(response.data);
+    } catch (reconciliationLoadError) {
+      setReconciliationError(reconciliationLoadError.message || 'Không thể đối soát tồn kho.');
+    } finally {
+      setReconciliationLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadInventory(true);
@@ -67,8 +86,6 @@ export default function InventoryPage() {
     };
   }, [loadInventory]);
 
-  const activeLocations = locations.length > 0 ? locations : DEFAULT_LOCATIONS;
-
   const filteredInventory = useMemo(() => {
     const searchTerm = query.trim().toLowerCase();
     return inventory.filter((item) => {
@@ -77,12 +94,12 @@ export default function InventoryPage() {
         || item.productName?.toLowerCase().includes(searchTerm);
       const matchesCategory = category === 'ALL' || category === 'LOW_STOCK' || item.productType === category;
       const matchesLowStock = category !== 'LOW_STOCK'
-        || activeLocations.some(({ code }) => isLowStock(quantityAt(item, code)));
+        || locations.some(({ code }) => isLowStock(quantityAt(item, code)));
       return matchesQuery && matchesCategory && matchesLowStock;
     });
-  }, [inventory, query, category, activeLocations]);
+  }, [inventory, locations, query, category]);
 
-  const lowStockLocations = activeLocations.reduce((total, { code }) =>
+  const lowStockLocations = locations.reduce((total, { code }) =>
     total + inventory.filter((item) => isLowStock(quantityAt(item, code))).length, 0);
 
   return (
@@ -108,6 +125,16 @@ export default function InventoryPage() {
           >
             {loading ? 'Đang tải…' : 'Làm mới'}
           </button>
+          {user?.role === ROLES.ADMIN && (
+            <button
+              type="button"
+              onClick={reconcileInventory}
+              disabled={reconciliationLoading}
+              className="rounded-lg border border-[#086288] px-4 py-2 text-sm font-semibold text-[#086288] hover:bg-sky-50 disabled:opacity-60"
+            >
+              {reconciliationLoading ? 'Đang đối soát…' : 'Đối soát tồn'}
+            </button>
+          )}
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2">
@@ -125,6 +152,69 @@ export default function InventoryPage() {
           <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             Không thể đồng bộ tồn kho: {error}
           </div>
+        )}
+
+        {user?.role === ROLES.ADMIN && reconciliationError && (
+          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            Không thể đối soát: {reconciliationError}
+          </div>
+        )}
+        {user?.role === ROLES.ADMIN && reconciliation && (
+          <section className="space-y-3 rounded-xl border border-[#d8e3fb]/50 bg-white p-4 shadow-sm" aria-label="Kết quả đối soát tồn kho">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-lg font-bold text-slate-900">Đối soát tồn kho</h2>
+              <span className="text-xs text-slate-500">
+                Kiểm tra lúc {new Date(reconciliation.checkedAt).toLocaleString('vi-VN')}
+              </span>
+            </div>
+            <p className="text-sm text-slate-700">{reconciliation.coverageNote}</p>
+            {reconciliation.balanceVariances.length === 0 && reconciliation.transferVariances.length === 0 ? (
+              <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">
+                Không phát hiện sai lệch giữa số dư tổng và tồn theo địa điểm, hoặc giữa phiếu điều chuyển và biến động tương ứng.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {reconciliation.balanceVariances.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <h3 className="mb-2 text-sm font-semibold text-red-800">Sai lệch số dư theo SKU</h3>
+                    <table className="w-full min-w-[600px] text-left text-sm">
+                      <thead className="bg-red-50 text-xs uppercase text-red-800">
+                        <tr><th className="px-3 py-2">SKU</th><th className="px-3 py-2">Sản phẩm</th><th className="px-3 py-2">Tổng variant</th><th className="px-3 py-2">Tổng địa điểm</th><th className="px-3 py-2">Chênh lệch</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {reconciliation.balanceVariances.map((row) => (
+                          <tr key={row.sku}>
+                            <td className="px-3 py-2 font-mono">{row.sku}</td><td className="px-3 py-2">{row.productName}</td>
+                            <td className="px-3 py-2">{row.variantStockQuantity}</td><td className="px-3 py-2">{row.locationQuantity}</td>
+                            <td className="px-3 py-2 font-semibold text-red-700">{row.difference}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                {reconciliation.transferVariances.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <h3 className="mb-2 text-sm font-semibold text-red-800">Sai lệch phiếu / biến động điều chuyển</h3>
+                    <table className="w-full min-w-[700px] text-left text-sm">
+                      <thead className="bg-red-50 text-xs uppercase text-red-800">
+                        <tr><th className="px-3 py-2">Mã phiếu</th><th className="px-3 py-2">Trạng thái</th><th className="px-3 py-2">SKU</th><th className="px-3 py-2">Xuất dự kiến / thực tế</th><th className="px-3 py-2">Nhập dự kiến / thực tế</th><th className="px-3 py-2">Chi tiết</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {reconciliation.transferVariances.map((row, index) => (
+                          <tr key={`${row.transferCode}-${row.sku}-${index}`}>
+                            <td className="px-3 py-2 font-mono">{row.transferCode}</td><td className="px-3 py-2">{row.status}</td><td className="px-3 py-2 font-mono">{row.sku}</td>
+                            <td className="px-3 py-2">{row.expectedOutQuantity} / {row.actualOutQuantity}</td>
+                            <td className="px-3 py-2">{row.expectedInQuantity} / {row.actualInQuantity}</td><td className="px-3 py-2">{row.issue}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
         )}
 
         <section className="rounded-xl border border-[#d8e3fb]/50 bg-white p-4 shadow-sm">
@@ -178,7 +268,7 @@ export default function InventoryPage() {
                     <th scope="col" className="px-3 py-3">SKU</th>
                     <th scope="col" className="px-3 py-3">Sản phẩm</th>
                     <th scope="col" className="px-3 py-3">Loại</th>
-                    {activeLocations.map((location) => (
+                    {locations.map((location) => (
                       <th scope="col" key={location.code} className="px-3 py-3 text-center">{location.label}</th>
                     ))}
                   </tr>
@@ -191,8 +281,9 @@ export default function InventoryPage() {
                       </th>
                       <td className="px-3 py-3 font-medium text-slate-900">{item.productName}</td>
                       <td className="px-3 py-3 text-slate-600">{CATEGORY_LABELS[item.productType] || item.productType}</td>
-                      {activeLocations.map((location) => {
+                      {locations.map((location) => {
                         const quantity = quantityAt(item, location.code);
+                        const sellableQuantity = sellableQuantityAt(item, location.code);
                         const lowStock = isLowStock(quantity);
                         return (
                           <td key={location.code} className="px-3 py-3 text-center">
@@ -200,11 +291,12 @@ export default function InventoryPage() {
                               className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${
                                 lowStock ? 'bg-red-100 text-red-800' : 'bg-emerald-50 text-emerald-800'
                               }`}
-                              aria-label={`${quantity} chiếc${lowStock ? ', cảnh báo tồn thấp' : ''}`}
+                              aria-label={`${quantity} chiếc, ${sellableQuantity} bán được${lowStock ? ', cảnh báo tồn thấp' : ''}`}
                             >
                               {quantity}
                               {lowStock && <span className="text-[10px]">Thấp</span>}
                             </span>
+                            <span className="mt-1 block text-xs text-slate-500">Bán được: {sellableQuantity}</span>
                           </td>
                         );
                       })}

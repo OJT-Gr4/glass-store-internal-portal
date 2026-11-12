@@ -5,6 +5,7 @@ import { authApi } from '../api/authApi';
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = 'optivision_auth_user';
+const DEFAULT_AVATAR_URL = 'https://i.pinimg.com/236x/3e/f1/fc/3ef1fcc3b6cbb97199f961bb0b3ead3f.jpg';
 
 function staffProfile(data, token) {
   const roles = Array.isArray(data?.roles) ? data.roles : [];
@@ -18,7 +19,9 @@ function staffProfile(data, token) {
     id: data.id, staffId: data.employeeCode || data.username,
     staffName: data.fullName || data.username, role,
     roleLabel: info.name, roleBadge: info.badgeText,
-    branchName: data.branchName || '', defaultRoute: info.defaultRoute,
+    branchName: data.branchName || '',
+    avatarUrl: data.avatarUrl || DEFAULT_AVATAR_URL,
+    defaultRoute: info.defaultRoute,
     token, loginAt: new Date().toISOString()
   };
 }
@@ -70,8 +73,18 @@ export function AuthProvider({ children }) {
     authApi.logout(); setUser(null);
     message.success('Đã đăng xuất khỏi hệ thống');
   };
+  const updateAvatar = async (avatarUrl) => {
+    const updated = await authApi.updateMyAvatar(avatarUrl);
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, avatarUrl: updated?.avatarUrl || DEFAULT_AVATAR_URL };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+    return updated;
+  };
   const hasRole = allowed => Boolean(user && (user.role === ROLES.ADMIN || !allowed?.length || allowed.includes(user.role)));
-  const value = { user, isAuthenticated: Boolean(user?.token), login, logout, hasRole, roleInfo: user ? ROLE_INFO[user.role] : null };
+  const value = { user, isAuthenticated: Boolean(user?.token), login, logout, updateAvatar, hasRole, roleInfo: user ? ROLE_INFO[user.role] : null };
   if (checking) return <div role="status">Đang xác thực phiên đăng nhập…</div>;
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
