@@ -229,17 +229,29 @@ export default function PosSepayModal({
     }
   };
 
+  const bankInfo = useMemo(() => {
+    const f = initiation?.formFields || {};
+    return {
+      bankBin: f.bankId || '970422',
+      bankName: f.bankName || (configInfo?.bankCode ? `${configInfo.bankCode} Bank` : 'MBBank (Ngân Hàng Quân Đội)'),
+      accountNumber: f.accountNo || configInfo?.bankAccount || '0987654321',
+      accountName: f.accountName || configInfo?.userBankName || 'OPTIVISION GLASS STORE',
+      addInfo: f.addInfo || order?.orderCode || '',
+    };
+  }, [initiation, configInfo, order?.orderCode]);
+
   // Official dynamic EMVCo Napas 247 QR payload
   const emvcoPayload = useMemo(() => {
+    if (initiation?.qrContent) return initiation.qrContent;
     if (vietQrCodeString) return vietQrCodeString;
     if (!order) return '';
     return generateVietQrEmvco({
-      bankBin: '970422', // MBBank
-      accountNumber: '0938773607',
+      bankBin: bankInfo.bankBin,
+      accountNumber: bankInfo.accountNumber,
       amount: order.finalAmount,
-      memo: order.orderCode
+      memo: bankInfo.addInfo || order.orderCode
     });
-  }, [vietQrCodeString, order]);
+  }, [initiation, vietQrCodeString, order, bankInfo]);
 
   if (!order) return null;
 
@@ -464,19 +476,19 @@ export default function PosSepayModal({
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '6px' }}>
                   <span style={{ color: '#64748b' }}>Ngân hàng thụ hưởng:</span>
-                  <span style={{ fontWeight: 600 }}>MBBank (Quân Đội)</span>
+                  <span style={{ fontWeight: 600 }}>{bankInfo.bankName}</span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '6px' }}>
                   <span style={{ color: '#64748b' }}>Số tài khoản:</span>
-                  <span style={{ fontWeight: 700, color: '#0f172a', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }} onClick={() => handleCopy('0938773607', 'acc')}>
-                    0938773607 {copiedKey === 'acc' ? <CheckOutlined className="text-emerald-600" /> : <CopyOutlined className="text-slate-400" />}
+                  <span style={{ fontWeight: 700, color: '#0f172a', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }} onClick={() => handleCopy(bankInfo.accountNumber, 'acc')}>
+                    {bankInfo.accountNumber} {copiedKey === 'acc' ? <CheckOutlined className="text-emerald-600" /> : <CopyOutlined className="text-slate-400" />}
                   </span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '6px' }}>
                   <span style={{ color: '#64748b' }}>Chủ tài khoản:</span>
-                  <span style={{ fontWeight: 600 }}>CÔNG TY KÍNH MẮT OPTIVISION</span>
+                  <span style={{ fontWeight: 600 }}>{bankInfo.accountName}</span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '6px' }}>
@@ -512,7 +524,7 @@ export default function PosSepayModal({
                   boxShadow: syncing ? '0 0 6px #10b981' : 'none'
                 }} />
                 <span style={{ fontSize: '12px', color: '#475569', fontWeight: 500 }}>
-                  {syncing ? 'Đang kiểm tra biến động số dư VietQR...' : 'Đang chờ VietQR callback xác thực'}
+                  {syncing ? 'Đang kiểm tra biến động số dư...' : 'Đang chờ SePay / VietQR xác thực tự động'}
                 </span>
               </div>
               {lastSyncTime && (
