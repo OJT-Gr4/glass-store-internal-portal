@@ -5,28 +5,14 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import OrderShippingLabel from './OrderShippingLabel';
 import { assertSavedTransition } from './shippingLabelUtils.js';
+import {
+  getOmsStatusMeta,
+  getPaidStageAction,
+  normalizeOmsStatus as normalizeStatus,
+  requiresLabProcessing,
+  needsClinicalReview,
+} from './omsOrderUtils.js';
 import '../workspace.css';
-
-const statuses = {
-  PENDING: ['Chờ thanh toán', 'orange'],
-  PENDING_PAYMENT: ['Chờ thanh toán', 'orange'],
-  PAID: ['Đã thanh toán', 'blue'],
-  LAB_DISPATCH_FAILED: ['Chưa gửi được lệnh Lab', 'red'],
-  WAITING_RX: ['Chờ toa kính', 'orange'],
-  PROCESSING: ['Đang gia công', 'orange'],
-  QC_PACKAGING: ['Chờ kiểm tra', 'purple'],
-  SHIPPING: ['Đang giao', 'cyan'],
-  COMPLETED: ['Hoàn tất', 'green'],
-  CANCELLED: ['Đã hủy', 'default'],
-  PENDING_CONFIRMATION: ['Chờ xác nhận', 'orange'],
-  CONFIRMED: ['Đã xác nhận', 'blue'],
-  PREPARING: ['Đang gia công', 'orange'],
-  READY_FOR_PICKUP: ['Chờ nhận tại quầy', 'cyan'],
-  CANCEL_REQUESTED: ['Yêu cầu hủy', 'orange'],
-  CANCEL_PENDING: ['Đang xử lý hủy', 'orange'],
-  REFUND_PENDING: ['Chờ hoàn tiền', 'orange'],
-  REFUNDED: ['Đã hoàn tiền', 'default'],
-};
 
 const CARRIERS = [
   { id: 'GHTK', name: 'GHTK (Giao Hàng Tiết Kiệm)', prefix: 'GHTK-HN', color: 'green', desc: 'Giao nhanh toàn quốc, mạng lưới rộng' },
@@ -39,15 +25,8 @@ const money = value => value == null ? '—' : Number(value).toLocaleString('vi-
 const date = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' }) : '—';
 const code = order => order.orderCode ? (order.orderCode.startsWith('#') ? order.orderCode : `#${order.orderCode}`) : `#${order.id}`;
 
-const normalizeStatus = s => {
-  const norm = (s || '').toUpperCase();
-  if (norm === 'PREPARING') return 'PROCESSING';
-  return norm;
-};
-
-const statusTag = value => {
-  const norm = normalizeStatus(value);
-  const cfg = statuses[norm] || statuses[(value || '').toUpperCase()] || ['Chưa cập nhật', 'default'];
+const statusTag = (value, order = null) => {
+  const cfg = getOmsStatusMeta(value, order);
   return <Tag color={cfg[1]}>{cfg[0]}</Tag>;
 };
 
@@ -167,7 +146,7 @@ export default function OrdersOmsPage() {
         'Đơn vị vận chuyển': order.carrierName || '—',
         'Mã vận đơn': order.trackingCode || '—',
         'Tổng tiền': order.finalAmount,
-        'Trạng thái': statuses[normalizeStatus(order.status)]?.[0] || order.status,
+        'Trạng thái': getOmsStatusMeta(order.status, order)[0],
       })));
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, sheet, 'Đơn hàng');
@@ -322,7 +301,7 @@ export default function OrdersOmsPage() {
       dataIndex: 'orderCode',
       render: (_, order) => (
         <span
-          className="workspace-code font-bold text-[#004967] hover:underline cursor-pointer"
+          className="workspace-code font-bold text-[#253c33] hover:underline cursor-pointer"
           onClick={() => { setActiveId(order.id); setModalOrder(order); }}
         >
           {code(order)}
@@ -393,7 +372,7 @@ export default function OrdersOmsPage() {
     {
       title: 'Trạng thái',
       dataIndex: 'status',
-      render: statusTag,
+      render: (value, order) => statusTag(value, order),
     },
     {
       title: 'Thao tác luồng chuẩn',
@@ -401,6 +380,7 @@ export default function OrdersOmsPage() {
       align: 'right',
       render: (_, order) => {
         const norm = normalizeStatus(order.status);
+        const paidAction = getPaidStageAction(order, false);
         return (
           <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
             {/* Nút hành động chuẩn theo từng bước (Chỉ người có thẩm quyền mới được bấm) */}
@@ -408,16 +388,16 @@ export default function OrdersOmsPage() {
               <Button
                 size="small"
                 type="primary"
-                disabled={isReadOnly || updating}
+                disabled={isReadOnly || updating || needsClinicalReview(order)}
                 className="bg-amber-600 hover:bg-amber-700 text-white font-semibold disabled:opacity-40"
-                onClick={() => handleUpdateStatus(order.id, 'PREPARING', { reason: 'Chuyển xưởng Lab mài lắp kính' })}
-                title={isReadOnly ? 'Vai trò của bạn không có quyền chuyển bước OMS' : 'Chuyển xưởng Lab gia công'}
+                onClick={() => handleUpdateStatus(order.id, 'PREPARING', { reason: paidAction.reason })}
+                title={isReadOnly ? 'Vai trò của bạn không có quyền chuyển bước OMS' : paidAction.tooltip}
               >
-                Chuyển xưởng Lab
+                {paidAction.label}
               </Button>
             )}
 
-            {norm === 'PROCESSING' && (
+            {norm === 'PROCESSING' && !needsClinicalReview(order) && (
               <>
                 <Button
                   size="small"
@@ -535,7 +515,7 @@ export default function OrdersOmsPage() {
             <Button
               size="small"
               type="primary"
-              className="bg-[#004967]"
+              className="bg-[#253c33]"
               onClick={e => handleOpenDetailModal(order, e)}
             >
               Chi tiết
@@ -547,22 +527,22 @@ export default function OrdersOmsPage() {
   ];
 
   return (
-    <div className="p-3.5 sm:p-5 max-w-[1600px] mx-auto w-full space-y-4">
+    <div className="p-3.5 sm:p-5 max-w-[1600px] min-w-0 mx-auto w-full space-y-5">
       {/* ---------------- 1. TIÊU ĐỀ & METRICS RIBBON ---------------- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-xs border border-slate-200">
         <div>
-          <h1 className="text-xl font-black text-[#004967] tracking-tight">
+          <h1 className="text-xl font-black text-[#253c33] tracking-tight">
             Quản Lý Đơn Hàng Chuỗi (OMS) &amp; Điều Phối Giao Hàng
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Quản trị luồng đơn hàng đa kênh (POS &amp; Online): PAID → PROCESSING (Xưởng Lab) → SHIPPING (Bàn giao Shipper) → COMPLETED (Giao thành công &amp; Ghi nhận doanh thu)
+          <p className="text-sm leading-relaxed text-slate-600 mt-1">
+            Quản trị luồng đơn hàng đa kênh (POS &amp; Online): PAID → PREPARING / PROCESSING (Chuẩn bị hàng / Xưởng Lab) → SHIPPING (Bàn giao Shipper) → COMPLETED (Giao thành công &amp; Ghi nhận doanh thu)
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={exportOrders} disabled={!filtered.length}>
             Xuất Excel
           </Button>
-          <Button type="primary" className="bg-[#004967]" onClick={loadOrders} loading={loading}>
+          <Button type="primary" className="bg-[#253c33]" onClick={loadOrders} loading={loading}>
             Làm mới
           </Button>
         </div>
@@ -610,7 +590,7 @@ export default function OrdersOmsPage() {
             type="button"
             onClick={() => setStatus('all')}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-              status === 'all' ? 'bg-[#004967] text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              status === 'all' ? 'bg-[#253c33] text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
             }`}
           >
             Tất cả ({orders.length})
@@ -633,7 +613,7 @@ export default function OrdersOmsPage() {
               status === 'PROCESSING' ? 'bg-amber-600 text-white shadow-xs' : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
             }`}
           >
-            Đang gia công (PROCESSING) ({orders.filter(o => normalizeStatus(o.status) === 'PROCESSING').length})
+            Đang chuẩn bị / Gia công ({orders.filter(o => normalizeStatus(o.status) === 'PROCESSING').length})
           </button>
 
           <button
@@ -669,7 +649,7 @@ export default function OrdersOmsPage() {
       </div>
 
       {/* ---------------- 3. BẢNG DỮ LIỆU ĐƠN HÀNG ---------------- */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden min-w-0">
         {error ? (
           <div className="p-4">
             <Alert type="error" showIcon message={error} action={<Button onClick={loadOrders}>Thử lại</Button>} />
@@ -701,7 +681,7 @@ export default function OrdersOmsPage() {
               <Tag color={modalOrder.channel === 'POS' ? 'blue' : 'purple'}>
                 {modalOrder.channel === 'POS' ? 'Tại quầy POS' : 'Website Online'}
               </Tag>
-              {statusTag(modalOrder.status)}
+              {statusTag(modalOrder.status, modalOrder)}
             </div>
           }
           footer={
@@ -712,8 +692,15 @@ export default function OrdersOmsPage() {
                   <Tag color="default">Chế độ xem chỉ đọc (Không có quyền OMS)</Tag>
                 ) : (
                   <>
-                    {['PAID', 'CONFIRMED'].includes(modalOrder.status) && <Button size="small" loading={updating} onClick={() => handleUpdateStatus(modalOrder.id, 'PREPARING', { reason: 'Chuyển xưởng Lab mài kính' })}>Chuyển gia công</Button>}
-                    {normalizeStatus(modalOrder.status) === 'PROCESSING' && (
+                    {['PAID', 'CONFIRMED'].includes(modalOrder.status) && (() => {
+                      const action = getPaidStageAction(modalOrder, true);
+                      return (
+                        <Button size="small" loading={updating} disabled={needsClinicalReview(modalOrder)} onClick={() => handleUpdateStatus(modalOrder.id, 'PREPARING', { reason: action.reason })}>
+                          {action.label}
+                        </Button>
+                      );
+                    })()}
+                    {normalizeStatus(modalOrder.status) === 'PROCESSING' && !needsClinicalReview(modalOrder) && (
                     <>
                       <Button size="small" type="primary" className="bg-indigo-600" onClick={() => openShippingModal(modalOrder)}>
                         Bàn giao Shipper (SHIPPING)
@@ -790,7 +777,7 @@ export default function OrdersOmsPage() {
                 <Button onClick={() => handleOpenLabelModal(modalOrder)}>
                   In phiếu A5
                 </Button>
-                <Button type="primary" className="bg-[#004967]" onClick={() => setIsModalOpen(false)}>Đóng</Button>
+                <Button type="primary" className="bg-[#253c33]" onClick={() => setIsModalOpen(false)}>Đóng</Button>
               </div>
             </div>
           }
@@ -809,12 +796,12 @@ export default function OrdersOmsPage() {
                   const isDone = stepIndex >= idx && currentNorm !== 'CANCELLED';
 
                   let bg = 'bg-white text-slate-400 border-slate-200';
-                  if (isCurrent) bg = 'bg-[#004967] text-white border-[#004967] font-bold shadow-xs';
+                  if (isCurrent) bg = 'bg-[#253c33] text-white border-[#253c33] font-bold shadow-xs';
                   else if (isDone) bg = 'bg-emerald-50 text-emerald-700 border-emerald-300 font-semibold';
 
                   const labels = {
                     PAID: '1. Đã thanh toán',
-                    PROCESSING: '2. Xưởng Lab mài kính',
+                    PROCESSING: requiresLabProcessing(modalOrder) ? '2. Xưởng Lab mài kính' : '2. Chuẩn bị & đóng gói hàng',
                     SHIPPING: '3. Bàn giao Shipper',
                     COMPLETED: '4. Giao thành công'
                   };
@@ -896,7 +883,7 @@ export default function OrdersOmsPage() {
                         <td className="p-2.5 font-bold text-slate-900">{item.productName}</td>
                         <td className="p-2.5 font-mono text-slate-600">{item.skuId || item.sku || '—'}</td>
                         <td className="p-2.5 text-right font-mono">{money(item.unitPrice)}</td>
-                        <td className="p-2.5 text-center font-bold text-[#004967]">{item.quantity ?? 1}</td>
+                        <td className="p-2.5 text-center font-bold text-[#253c33]">{item.quantity ?? 1}</td>
                         <td className="p-2.5 text-right font-mono font-bold text-slate-900">
                           {money(item.subtotal ?? (Number(item.unitPrice || 0) * (item.quantity ?? 1)))}
                         </td>
@@ -908,14 +895,14 @@ export default function OrdersOmsPage() {
             </div>
 
             {/* Chi Tiết Thanh Toán & Quyết Toán */}
-            <div className="bg-[#f0f3ff] p-4 rounded-xl border border-[#d8e3fb] space-y-2">
+            <div className="bg-[#f1f2ec] p-4 rounded-xl border border-[#dce2d8] space-y-2">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
                 Quyết Toán &amp; Hình Thức Thanh Toán
               </span>
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div className="space-y-1">
-                  <div className="text-slate-600">Phương thức: <strong className="text-[#004967]">{modalOrder.paymentMethod || 'VIETQR'}</strong></div>
-                  <div className="text-slate-600">Trạng thái đơn: {statusTag(modalOrder.status)}</div>
+                  <div className="text-slate-600">Phương thức: <strong className="text-[#253c33]">{modalOrder.paymentMethod || 'VIETQR'}</strong></div>
+                  <div className="text-slate-600">Trạng thái đơn: {statusTag(modalOrder.status, modalOrder)}</div>
                 </div>
 
                 <div className="space-y-1 text-right">
@@ -935,7 +922,7 @@ export default function OrdersOmsPage() {
                       <span className="font-mono">{money(modalOrder.taxAmount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between items-center text-sm font-black text-[#004967] pt-1 border-t border-slate-200">
+                  <div className="flex justify-between items-center text-sm font-black text-[#253c33] pt-1 border-t border-slate-200">
                     <span>TỔNG THANH TOÁN:</span>
                     <span className="text-base font-mono">{money(modalOrder.finalAmount)}</span>
                   </div>
@@ -976,7 +963,7 @@ export default function OrdersOmsPage() {
                           <td className="p-2 font-semibold">
                             <span className="text-slate-500">{h.fromStatus || 'Khởi tạo'}</span>
                             <span className="mx-1 text-slate-400">→</span>
-                            <span className="text-[#004967] font-bold">{h.toStatus}</span>
+                            <span className="text-[#253c33] font-bold">{h.toStatus}</span>
                           </td>
                           <td className="p-2 text-slate-700 whitespace-nowrap">
                             <Tag color="geekblue" className="text-[10px] m-0">{h.actor || 'SYSTEM'}</Tag>
@@ -1147,11 +1134,11 @@ export default function OrdersOmsPage() {
               </div>
             </section>
 
-            <section className="bg-[#f0f3ff] p-3 rounded-xl border border-[#d8e3fb] space-y-1">
+            <section className="bg-[#f1f2ec] p-3 rounded-xl border border-[#dce2d8] space-y-1">
               <div className="flex justify-between"><span>Tiền hàng</span><span className="font-mono">{money(activeOrder.totalAmount)}</span></div>
               {Number(activeOrder.discountAmount) > 0 && <div className="flex justify-between text-emerald-700"><span>Giảm giá</span><span className="font-mono">−{money(activeOrder.discountAmount)}</span></div>}
               {Number(activeOrder.taxAmount) > 0 && <div className="flex justify-between"><span>Thuế</span><span className="font-mono">{money(activeOrder.taxAmount)}</span></div>}
-              <div className="flex justify-between font-bold text-sm text-[#004967] pt-1 border-t border-slate-200">
+              <div className="flex justify-between font-bold text-sm text-[#253c33] pt-1 border-t border-slate-200">
                 <span>Tổng tiền</span>
                 <span className="font-mono">{money(activeOrder.finalAmount)}</span>
               </div>
@@ -1164,7 +1151,7 @@ export default function OrdersOmsPage() {
               <Button block type="dashed" onClick={() => handleOpenLabelModal(activeOrder)}>
                 Xem &amp; In nhãn vận chuyển A5 dán hộp kính
               </Button>
-              <Button block type="primary" className="bg-[#004967]" onClick={() => setIsModalOpen(true)}>
+              <Button block type="primary" className="bg-[#253c33]" onClick={() => setIsModalOpen(true)}>
                 Mở Popup Chi Tiết Toàn Diện
               </Button>
             </div>

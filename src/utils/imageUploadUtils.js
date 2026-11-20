@@ -1,8 +1,15 @@
 export const DEFAULT_AVATAR_URL =
-  'https://i.pinimg.com/236x/3e/f1/fc/3ef1fcc3b6cbb97199f961bb0b3ead3f.jpg';
+  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJAy3MrvYrmubxOdwfv33LI41s2yC06qjU4-qkqMyF4w&s';
 
 export const DEFAULT_PRODUCT_IMAGE =
   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvIuZeIWL8lzCvG6kGgNUCAlk_ov0naBVuipn8z44eFg&s=10';
+
+export const CLOUDINARY_CONFIG = {
+  cloudName: 'dbcvrbm8x',
+  apiKey: '366326716711443',
+  apiSecret: 'C83MS7o5SEYP6RFG0eJw_syF-Yc',
+  uploadUrl: 'https://api.cloudinary.com/v1_1/dbcvrbm8x/image/upload',
+};
 
 export function isValidImageInput(value) {
   if (!value || !String(value).trim()) return true;
@@ -11,6 +18,49 @@ export function isValidImageInput(value) {
     return /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(trimmed);
   }
   return /^https?:\/\/.+/i.test(trimmed);
+}
+
+async function computeSha1(str) {
+  if (typeof window !== 'undefined' && window.crypto?.subtle) {
+    const buffer = new TextEncoder().encode(str);
+    const hashBuffer = await window.crypto.subtle.digest('SHA-1', buffer);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+  return '';
+}
+
+/**
+ * Uploads an image file directly to Cloudinary using signed authentication.
+ * Returns the permanent secure HTTPS URL (e.g. https://res.cloudinary.com/dbcvrbm8x/image/upload/...)
+ */
+export async function uploadToCloudinary(file) {
+  if (!file) throw new Error('Vui lòng chọn tệp hình ảnh.');
+  const timestamp = Math.floor(Date.now() / 1000);
+  const strToSign = `timestamp=${timestamp}${CLOUDINARY_CONFIG.apiSecret}`;
+  const signature = await computeSha1(strToSign);
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('api_key', CLOUDINARY_CONFIG.apiKey);
+  formData.append('timestamp', String(timestamp));
+  if (signature) {
+    formData.append('signature', signature);
+  }
+
+  const res = await fetch(CLOUDINARY_CONFIG.uploadUrl, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error?.message || `Lỗi tải ảnh Cloudinary (HTTP ${res.status})`);
+  }
+
+  const data = await res.json();
+  return data.secure_url || data.url;
 }
 
 export function compressImageToDataUrl(file, maxDimension = 320, quality = 0.85) {
@@ -39,4 +89,16 @@ export function compressImageToDataUrl(file, maxDimension = 320, quality = 0.85)
     };
     reader.readAsDataURL(file);
   });
+}
+
+/**
+ * High-level helper: attempts Cloudinary upload first, falls back to local compressed data URL if network error.
+ */
+export async function uploadImageFile(file, maxDimension = 640) {
+  try {
+    return await uploadToCloudinary(file);
+  } catch (error) {
+    console.warn('Tải ảnh lên Cloudinary gặp lỗi, chuyển sang nén dữ liệu cục bộ:', error);
+    return await compressImageToDataUrl(file, maxDimension, 0.85);
+  }
 }

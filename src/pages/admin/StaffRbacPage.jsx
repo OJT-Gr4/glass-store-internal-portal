@@ -112,7 +112,7 @@ export default function StaffRbacPage() {
       return { code: 'lab_tech', label: 'Kỹ Thuật Viên Xưởng Lab', color: 'bg-indigo-700 text-white' };
     }
     if (roleList.includes('ROLE_SALES_STAFF')) {
-      return { code: 'cashier', label: 'Thu Ngân POS & Bán Lẻ', color: 'bg-[#004967] text-white' };
+      return { code: 'cashier', label: 'Thu Ngân POS & Bán Lẻ', color: 'bg-[#253c33] text-white' };
     }
     return { code: 'cashier', label: 'Nhân Viên Bán Hàng', color: 'bg-slate-700 text-white' };
   };
@@ -365,32 +365,32 @@ export default function StaffRbacPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#f9f9ff]">
+    <div className="w-full min-h-screen bg-[#f9f8f4]">
       <div className="flex flex-col w-full max-w-[1600px] mx-auto p-3.5 sm:p-5 gap-4">
         {/* Header Ribbon */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-[#d8e3fb]/40 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-[#dce2d8]/40 shadow-sm">
           <div>
             <div className="flex items-center gap-1.5 text-xs text-[#70787f]">
               <span>Hệ Thống</span>
               <span className="material-symbols-outlined text-[14px]">chevron_right</span>
               <span>Cấu Hình</span>
               <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span className="text-[#004967] font-semibold">Nhân Sự &amp; Phân Quyền</span>
+              <span className="text-[#253c33] font-semibold">Nhân Sự &amp; Phân Quyền</span>
             </div>
-            <h1 className="text-lg font-bold text-[#111c2d] mt-1">Quản Trị Nhân Viên &amp; Phân Quyền Vai Trò (RBAC)</h1>
+            <h1 className="text-lg font-bold text-[#202924] mt-1">Quản Trị Nhân Viên &amp; Phân Quyền Vai Trò (RBAC)</h1>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => message.success('Đang xuất danh sách nhân sự định dạng Excel (.xlsx)...')}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#f0f3ff] hover:bg-[#e7eeff] text-[#004967] text-xs font-semibold transition-all border border-[#d8e3fb]"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#f1f2ec] hover:bg-[#eceee7] text-[#253c33] text-xs font-semibold transition-all border border-[#dce2d8]"
             >
               <span className="material-symbols-outlined text-[16px]">download</span>
               <span>Xuất Excel</span>
             </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#004967] hover:bg-[#086288] text-white text-xs font-semibold shadow-sm transition-all"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#253c33] hover:bg-[#30483b] text-white text-xs font-semibold shadow-sm transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">person_add</span>
               <span>+ Thêm Nhân Viên</span>
@@ -400,35 +400,35 @@ export default function StaffRbacPage() {
 
         {/* 4 Core KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-white p-3.5 rounded-xl border border-[#d8e3fb]/40 shadow-sm flex items-center justify-between">
+          <div className="bg-white p-3.5 rounded-xl border border-[#dce2d8]/40 shadow-sm flex items-center justify-between">
             <div>
               <span className="text-[11px] font-semibold text-[#70787f] uppercase tracking-wider block">Tổng nhân sự</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl font-bold text-[#004967]">{activeStaff.length + lockedStaff.length}</span>
+                <span className="text-xl font-bold text-[#253c33]">{activeStaff.length + lockedStaff.length}</span>
                 <span className="text-xs text-[#70787f]">hồ sơ</span>
               </div>
               <span className="text-[11px] text-emerald-600 font-medium">{activeStaff.length} đang hoạt động</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-[#e7eeff] text-[#004967] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#eceee7] text-[#253c33] flex items-center justify-center">
               <span className="material-symbols-outlined text-[20px]">badge</span>
             </div>
           </div>
 
-          <div className="bg-white p-3.5 rounded-xl border border-[#d8e3fb]/40 shadow-sm flex items-center justify-between">
+          <div className="bg-white p-3.5 rounded-xl border border-[#dce2d8]/40 shadow-sm flex items-center justify-between">
             <div>
               <span className="text-[11px] font-semibold text-[#70787f] uppercase tracking-wider block">Vai trò hệ thống</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className="text-xl font-bold text-[#004967]">5</span>
+                <span className="text-xl font-bold text-[#253c33]">5</span>
                 <span className="text-xs text-[#70787f]">nhóm chính</span>
               </div>
               <span className="text-[11px] text-[#70787f]">Phân quyền chặt chẽ</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-[#e7eeff] text-[#004967] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#eceee7] text-[#253c33] flex items-center justify-center">
               <span className="material-symbols-outlined text-[20px]">shield_person</span>
             </div>
           </div>
 
-          <div className="bg-white p-3.5 rounded-xl border border-[#d8e3fb]/40 shadow-sm flex items-center justify-between">
+          <div className="bg-white p-3.5 rounded-xl border border-[#dce2d8]/40 shadow-sm flex items-center justify-between">
             <div>
               <span className="text-[11px] font-semibold text-[#70787f] uppercase tracking-wider block">Phiên trực tuyến</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -451,13 +451,13 @@ export default function StaffRbacPage() {
             className={`p-3.5 rounded-xl border shadow-sm flex items-center justify-between cursor-pointer transition-all ${
               pendingStaff.length > 0 
                 ? 'bg-amber-50/70 border-amber-200 hover:bg-amber-50' 
-                : 'bg-white border-[#d8e3fb]/40 hover:bg-[#f0f3ff]'
+                : 'bg-white border-[#dce2d8]/40 hover:bg-[#f1f2ec]'
             }`}
           >
             <div>
               <span className="text-[11px] font-semibold text-[#70787f] uppercase tracking-wider block">Yêu cầu cấp quyền</span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
-                <span className={`text-xl font-bold ${pendingStaff.length > 0 ? 'text-amber-700' : 'text-[#004967]'}`}>
+                <span className={`text-xl font-bold ${pendingStaff.length > 0 ? 'text-amber-700' : 'text-[#253c33]'}`}>
                   {pendingStaff.length}
                 </span>
                 <span className="text-xs text-[#70787f]">chờ duyệt</span>
@@ -467,7 +467,7 @@ export default function StaffRbacPage() {
               </span>
             </div>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              pendingStaff.length > 0 ? 'bg-amber-100 text-amber-800' : 'bg-[#e7eeff] text-[#004967]'
+              pendingStaff.length > 0 ? 'bg-amber-100 text-amber-800' : 'bg-[#eceee7] text-[#253c33]'
             }`}>
               <span className="material-symbols-outlined text-[20px]">pending_actions</span>
             </div>
@@ -475,14 +475,14 @@ export default function StaffRbacPage() {
         </div>
 
         {/* Tab Controls */}
-        <div className="flex items-center justify-between border-b border-[#e7eeff] pb-1">
+        <div className="flex items-center justify-between border-b border-[#eceee7] pb-1">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('staff')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 activeTab === 'staff'
-                  ? 'bg-[#004967] text-white shadow-sm'
-                  : 'bg-white text-[#70787f] hover:bg-[#f0f3ff] border border-[#d8e3fb]/60'
+                  ? 'bg-[#253c33] text-white shadow-sm'
+                  : 'bg-white text-[#70787f] hover:bg-[#f1f2ec] border border-[#dce2d8]/60'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">group</span>
@@ -494,8 +494,8 @@ export default function StaffRbacPage() {
               onClick={() => setActiveTab('requests')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 activeTab === 'requests'
-                  ? 'bg-[#004967] text-white shadow-sm'
-                  : 'bg-white text-[#70787f] hover:bg-[#f0f3ff] border border-[#d8e3fb]/60'
+                  ? 'bg-[#253c33] text-white shadow-sm'
+                  : 'bg-white text-[#70787f] hover:bg-[#f1f2ec] border border-[#dce2d8]/60'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">person_add</span>
@@ -511,8 +511,8 @@ export default function StaffRbacPage() {
               onClick={() => setActiveTab('matrix')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 activeTab === 'matrix'
-                  ? 'bg-[#004967] text-white shadow-sm'
-                  : 'bg-white text-[#70787f] hover:bg-[#f0f3ff] border border-[#d8e3fb]/60'
+                  ? 'bg-[#253c33] text-white shadow-sm'
+                  : 'bg-white text-[#70787f] hover:bg-[#f1f2ec] border border-[#dce2d8]/60'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">grid_view</span>
@@ -524,8 +524,8 @@ export default function StaffRbacPage() {
               data-testid="tab-notification-channels"
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 activeTab === 'notifications'
-                  ? 'bg-[#004967] text-white shadow-sm'
-                  : 'bg-white text-[#70787f] hover:bg-[#f0f3ff] border border-[#d8e3fb]/60'
+                  ? 'bg-[#253c33] text-white shadow-sm'
+                  : 'bg-white text-[#70787f] hover:bg-[#f1f2ec] border border-[#dce2d8]/60'
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">notifications_active</span>
@@ -536,9 +536,9 @@ export default function StaffRbacPage() {
 
         {/* ================= TAB 1: DANH SÁCH NHÂN SỰ ================= */}
         {activeTab === 'staff' && (
-          <div className="bg-white rounded-xl border border-[#d8e3fb]/40 shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-white rounded-xl border border-[#dce2d8]/40 shadow-sm overflow-hidden flex flex-col">
             {/* Filter toolbar */}
-            <div className="p-3.5 bg-[#f0f3ff]/50 border-b border-[#e7eeff] flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="p-3.5 bg-[#f1f2ec]/50 border-b border-[#eceee7] flex flex-col md:flex-row items-center justify-between gap-3">
               <div className="w-full md:w-80 relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[#70787f]">search</span>
                 <input
@@ -546,7 +546,7 @@ export default function StaffRbacPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Tìm theo tên, mã STF, email..."
-                  className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-white border border-[#d8e3fb] text-xs text-[#111c2d] placeholder-[#70787f] focus:outline-none focus:ring-1 focus:ring-[#004967]"
+                  className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-white border border-[#dce2d8] text-xs text-[#202924] placeholder-[#70787f] focus:outline-none focus:ring-1 focus:ring-[#253c33]"
                 />
               </div>
 
@@ -554,7 +554,7 @@ export default function StaffRbacPage() {
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-[#d8e3fb] text-xs font-medium text-[#111c2d] focus:outline-none"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#dce2d8] text-xs font-medium text-[#202924] focus:outline-none"
                 >
                   {ROLES_LIST.map(r => (
                     <option key={r.code} value={r.code}>{r.label}</option>
@@ -564,7 +564,7 @@ export default function StaffRbacPage() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-[#d8e3fb] text-xs font-medium text-[#111c2d] focus:outline-none"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-[#dce2d8] text-xs font-medium text-[#202924] focus:outline-none"
                 >
                   <option value="all">Tất cả trạng thái</option>
                   <option value="active">Đang hoạt động</option>
@@ -578,7 +578,7 @@ export default function StaffRbacPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[880px]">
                 <thead>
-                  <tr className="bg-[#dee8ff]/30 text-[#70787f] uppercase text-[11px] font-bold tracking-wider border-b border-[#e7eeff]">
+                  <tr className="bg-[#e4e4db]/30 text-[#70787f] uppercase text-[11px] font-bold tracking-wider border-b border-[#eceee7]">
                     <th className="py-3 px-4">Nhân viên</th>
                     <th className="py-3 px-3">Chi nhánh</th>
                     <th className="py-3 px-3">Vai trò phân quyền</th>
@@ -587,9 +587,9 @@ export default function StaffRbacPage() {
                     <th className="py-3 px-4 text-right">Tác vụ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#e7eeff] text-xs text-[#111c2d]">
+                <tbody className="divide-y divide-[#eceee7] text-xs text-[#202924]">
                   {filteredStaff.map(staff => (
-                    <tr key={staff.id} className="hover:bg-[#f0f3ff]/60 transition-colors">
+                    <tr key={staff.id} className="hover:bg-[#f1f2ec]/60 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
                           <img
@@ -602,19 +602,19 @@ export default function StaffRbacPage() {
                             className="w-9 h-9 rounded-full object-cover border border-[#cde5f5] bg-slate-50 flex-shrink-0 shadow-sm"
                           />
                           <div>
-                            <div className="font-semibold text-[13px] text-[#111c2d] flex items-center gap-1.5">
+                            <div className="font-semibold text-[13px] text-[#202924] flex items-center gap-1.5">
                               {staff.name}
-                              <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-[#e7eeff] text-[#004967]">{staff.id}</span>
+                              <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-[#eceee7] text-[#253c33]">{staff.id}</span>
                             </div>
                             <div className="text-[11px] text-[#70787f]">{staff.email} • {staff.phone}</div>
                           </div>
                         </div>
                       </td>
                       <td className="py-3 px-3">
-                        <span className="font-medium text-[#111c2d]">{staff.branch}</span>
+                        <span className="font-medium text-[#202924]">{staff.branch}</span>
                       </td>
                       <td className="py-3 px-3">
-                        <span className="px-2.5 py-1 rounded-full bg-[#dee8ff] text-[#004967] font-semibold text-[11px] inline-block">
+                        <span className="px-2.5 py-1 rounded-full bg-[#e4e4db] text-[#253c33] font-semibold text-[11px] inline-block">
                           {staff.roleName}
                         </span>
                       </td>
@@ -654,7 +654,7 @@ export default function StaffRbacPage() {
                             <>
                               <button
                                 onClick={() => setEditingStaff(staff)}
-                                className="p-1.5 rounded-lg text-[#004967] hover:bg-[#dee8ff] transition-colors"
+                                className="p-1.5 rounded-lg text-[#253c33] hover:bg-[#e4e4db] transition-colors"
                                 title="Chỉnh sửa phân quyền"
                               >
                                 <span className="material-symbols-outlined text-[17px]">edit</span>
@@ -684,10 +684,10 @@ export default function StaffRbacPage() {
 
         {/* ================= TAB 2: YÊU CẦU CẤP QUYỀN (ĐĂNG KÝ MỚI) ================= */}
         {activeTab === 'requests' && (
-          <div className="bg-white rounded-xl border border-[#d8e3fb]/40 shadow-sm overflow-hidden flex flex-col">
-            <div className="p-4 bg-gradient-to-r from-[#f0f3ff] to-[#e7eeff]/40 border-b border-[#e7eeff] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="bg-white rounded-xl border border-[#dce2d8]/40 shadow-sm overflow-hidden flex flex-col">
+            <div className="p-4 bg-gradient-to-r from-[#f1f2ec] to-[#eceee7]/40 border-b border-[#eceee7] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h3 className="text-sm font-bold text-[#004967] flex items-center gap-1.5">
+                <h3 className="text-sm font-bold text-[#253c33] flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
                   <span>Hồ Sơ Đăng Ký Chờ Phê Duyệt Cấp Quyền</span>
                 </h3>
@@ -697,7 +697,7 @@ export default function StaffRbacPage() {
               </div>
               <button
                 onClick={loadStaff}
-                className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-white border border-[#d8e3fb] hover:bg-[#f0f3ff] text-xs font-semibold text-[#004967] flex items-center gap-1"
+                className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-white border border-[#dce2d8] hover:bg-[#f1f2ec] text-xs font-semibold text-[#253c33] flex items-center gap-1"
               >
                 <span className="material-symbols-outlined text-[16px]">refresh</span>
                 <span>Làm mới danh sách</span>
@@ -709,7 +709,7 @@ export default function StaffRbacPage() {
                 <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
                   <span className="material-symbols-outlined text-[28px]">verified</span>
                 </div>
-                <h4 className="text-sm font-bold text-[#111c2d]">Không có yêu cầu cấp quyền nào đang chờ xử lý</h4>
+                <h4 className="text-sm font-bold text-[#202924]">Không có yêu cầu cấp quyền nào đang chờ xử lý</h4>
                 <p className="text-xs text-[#70787f] mt-1 max-w-md">
                   Khi nhân sự mới điền form nộp yêu cầu tại màn hình Đăng Ký Cổng Nội Bộ, hồ sơ sẽ lập tức xuất hiện tại đây để Quản trị viên xét duyệt.
                 </p>
@@ -718,7 +718,7 @@ export default function StaffRbacPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[880px]">
                   <thead>
-                    <tr className="bg-[#dee8ff]/30 text-[#70787f] uppercase text-[11px] font-bold tracking-wider border-b border-[#e7eeff]">
+                    <tr className="bg-[#e4e4db]/30 text-[#70787f] uppercase text-[11px] font-bold tracking-wider border-b border-[#eceee7]">
                       <th className="py-3 px-4">Ứng viên đề xuất</th>
                       <th className="py-3 px-3">Cơ sở / Chi nhánh</th>
                       <th className="py-3 px-3">Phân hệ xin cấp</th>
@@ -727,7 +727,7 @@ export default function StaffRbacPage() {
                       <th className="py-3 px-4 text-right">Phê duyệt (Admin Action)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#e7eeff] text-xs text-[#111c2d]">
+                  <tbody className="divide-y divide-[#eceee7] text-xs text-[#202924]">
                     {pendingStaff.map(staff => (
                       <tr key={staff.id} className="hover:bg-amber-50/40 transition-colors">
                         <td className="py-3 px-4">
@@ -742,7 +742,7 @@ export default function StaffRbacPage() {
                               className="w-9 h-9 rounded-full object-cover border border-amber-200 bg-white flex-shrink-0 shadow-sm"
                             />
                             <div>
-                              <div className="font-semibold text-[13px] text-[#111c2d] flex items-center gap-1.5">
+                              <div className="font-semibold text-[13px] text-[#202924] flex items-center gap-1.5">
                                 {staff.name}
                                 <span className="text-[11px] font-mono px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">{staff.id}</span>
                               </div>
@@ -750,11 +750,11 @@ export default function StaffRbacPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-3 font-medium text-[#111c2d]">
+                        <td className="py-3 px-3 font-medium text-[#202924]">
                           {staff.branch}
                         </td>
                         <td className="py-3 px-3">
-                          <span className="px-2.5 py-1 rounded-full bg-[#dee8ff] text-[#004967] font-semibold text-[11px]">
+                          <span className="px-2.5 py-1 rounded-full bg-[#e4e4db] text-[#253c33] font-semibold text-[11px]">
                             {staff.roleName}
                           </span>
                         </td>
@@ -778,7 +778,7 @@ export default function StaffRbacPage() {
                             </button>
                             <button
                               onClick={() => handleApproveStaff(staff)}
-                              className="px-3 py-1.5 rounded-lg bg-[#004967] hover:bg-[#086288] text-white text-xs font-bold flex items-center gap-1 shadow-sm transition-colors"
+                              className="px-3 py-1.5 rounded-lg bg-[#253c33] hover:bg-[#30483b] text-white text-xs font-bold flex items-center gap-1 shadow-sm transition-colors"
                             >
                               <span className="material-symbols-outlined text-[15px]">check_circle</span>
                               <span>Duyệt &amp; Kích Hoạt</span>
@@ -796,19 +796,19 @@ export default function StaffRbacPage() {
 
         {/* ================= TAB 3: MA TRẬN PHÂN QUYỀN (RBAC MATRIX) ================= */}
         {activeTab === 'matrix' && (
-          <div className="bg-white rounded-xl border border-[#d8e3fb]/40 shadow-sm overflow-hidden flex flex-col">
-            <div className="p-4 bg-[#f0f3ff]/50 border-b border-[#e7eeff] flex items-center justify-between">
+          <div className="bg-white rounded-xl border border-[#dce2d8]/40 shadow-sm overflow-hidden flex flex-col">
+            <div className="p-4 bg-[#f1f2ec]/50 border-b border-[#eceee7] flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-[#004967]">Ma Trận Phân Quyền Chi Tiết Theo Phân Hệ</h3>
+                <h3 className="text-sm font-bold text-[#253c33]">Ma Trận Phân Quyền Chi Tiết Theo Phân Hệ</h3>
                 <p className="text-xs text-[#70787f]">Quy định quyền truy cập &amp; tác nghiệp của từng nhóm chức danh nhân sự trong chuỗi</p>
               </div>
-              <span className="text-xs font-mono text-[#004967] bg-[#dee8ff] px-2 py-1 rounded">5 Phân Hệ Tác Nghiệp</span>
+              <span className="text-xs font-mono text-[#253c33] bg-[#e4e4db] px-2 py-1 rounded">5 Phân Hệ Tác Nghiệp</span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-[#dee8ff]/30 text-[#70787f] uppercase text-[11px] font-bold tracking-wider border-b border-[#e7eeff]">
+                  <tr className="bg-[#e4e4db]/30 text-[#70787f] uppercase text-[11px] font-bold tracking-wider border-b border-[#eceee7]">
                     <th className="py-3 px-4 w-1/3">Chức năng &amp; Phân hệ</th>
                     <th className="py-3 px-3 text-center">Quản Trị (Admin)</th>
                     <th className="py-3 px-3 text-center">Cửa Hàng Trưởng</th>
@@ -817,18 +817,18 @@ export default function StaffRbacPage() {
                     <th className="py-3 px-3 text-center">KTV Lab Lens</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#e7eeff] text-xs">
+                <tbody className="divide-y divide-[#eceee7] text-xs">
                   {RBAC_MODULES.map((group, gIdx) => (
                     <React.Fragment key={gIdx}>
-                      <tr className="bg-[#f0f3ff]/70 font-bold text-[#004967]">
+                      <tr className="bg-[#f1f2ec]/70 font-bold text-[#253c33]">
                         <td colSpan={6} className="py-2.5 px-4 flex items-center gap-2">
                           <span className="material-symbols-outlined text-[16px]">{group.icon}</span>
                           <span>{group.group}</span>
                         </td>
                       </tr>
                       {group.permissions.map((p) => (
-                        <tr key={p.key} className="hover:bg-[#f9f9ff]">
-                          <td className="py-2.5 px-4 text-[#111c2d] pl-8">
+                        <tr key={p.key} className="hover:bg-[#f9f8f4]">
+                          <td className="py-2.5 px-4 text-[#202924] pl-8">
                             • {p.name}
                           </td>
                           <td className="py-2.5 px-3 text-center">
@@ -858,10 +858,10 @@ export default function StaffRbacPage() {
 
         {/* ================= TAB 4: CẤU HÌNH KÊNH THÔNG BÁO (FR-ADM-10) ================= */}
         {activeTab === 'notifications' && (
-          <div className="bg-white rounded-xl border border-[#d8e3fb]/40 shadow-sm p-5 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#e7eeff]">
+          <div className="bg-white rounded-xl border border-[#dce2d8]/40 shadow-sm p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#eceee7]">
               <div>
-                <h3 className="text-sm font-bold text-[#004967]">
+                <h3 className="text-sm font-bold text-[#253c33]">
                   Cấu Hình Kênh Thông Báo Giao Dịch &amp; Chu Kỳ Polling
                 </h3>
                 <p className="text-xs text-[#70787f] mt-0.5">
@@ -873,7 +873,7 @@ export default function StaffRbacPage() {
                 onClick={handleSaveChannelConfig}
                 disabled={channelSaving || channelLoading}
                 data-testid="save-notification-channel-config"
-                className="px-4 py-2 rounded-xl bg-[#004967] hover:bg-[#086288] text-white text-xs font-bold shadow-sm disabled:opacity-50 cursor-pointer shrink-0"
+                className="px-4 py-2 rounded-xl bg-[#253c33] hover:bg-[#30483b] text-white text-xs font-bold shadow-sm disabled:opacity-50 cursor-pointer shrink-0"
               >
                 {channelSaving ? 'Đang lưu...' : 'Lưu Cấu Hình Kênh'}
               </button>
@@ -891,16 +891,16 @@ export default function StaffRbacPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl border border-[#d8e3fb] bg-[#f0f7ff] space-y-3">
+                <div className="p-4 rounded-xl border border-[#dce2d8] bg-[#f0f7ff] space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#004967]">1. Kênh In-App &amp; Polling Thống Nhất</span>
+                    <span className="text-xs font-bold text-[#253c33]">1. Kênh In-App &amp; Polling Thống Nhất</span>
                     <Tag color="green">ACTIVE</Tag>
                   </div>
                   <p className="text-[11px] text-[#40484e]">
                     Đồng bộ hộp thư Portal nội bộ &amp; Customer Web từ CSDL theo chủ sở hữu.
                   </p>
                   <div>
-                    <label className="block text-[11px] font-bold text-[#111c2d] mb-1">
+                    <label className="block text-[11px] font-bold text-[#202924] mb-1">
                       Chu kỳ Polling (giây, từ 5s đến 120s)
                     </label>
                     <input
@@ -910,14 +910,14 @@ export default function StaffRbacPage() {
                       data-testid="poll-interval-input"
                       value={channelDraft.pollIntervalSeconds}
                       onChange={(e) => setChannelDraft((prev) => ({ ...prev, pollIntervalSeconds: Number(e.target.value) }))}
-                      className="w-full px-3 py-1.5 rounded-lg border border-[#d8e3fb] bg-white text-xs font-bold text-[#111c2d]"
+                      className="w-full px-3 py-1.5 rounded-lg border border-[#dce2d8] bg-white text-xs font-bold text-[#202924]"
                     />
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl border border-[#d8e3fb] bg-white space-y-3">
+                <div className="p-4 rounded-xl border border-[#dce2d8] bg-white space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#111c2d]">2. Cổng SMS Giao Dịch</span>
+                    <span className="text-xs font-bold text-[#202924]">2. Cổng SMS Giao Dịch</span>
                     <Switch
                       checked={channelDraft.smsEnabled}
                       onChange={(checked) => setChannelDraft((prev) => ({ ...prev, smsEnabled: checked }))}
@@ -935,9 +935,9 @@ export default function StaffRbacPage() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl border border-[#d8e3fb] bg-white space-y-3">
+                <div className="p-4 rounded-xl border border-[#dce2d8] bg-white space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#111c2d]">3. Cổng Email Giao Dịch</span>
+                    <span className="text-xs font-bold text-[#202924]">3. Cổng Email Giao Dịch</span>
                     <Switch
                       checked={channelDraft.emailEnabled}
                       onChange={(checked) => setChannelDraft((prev) => ({ ...prev, emailEnabled: checked }))}
@@ -959,7 +959,7 @@ export default function StaffRbacPage() {
 
             {channelConfig?.updatedBy && (
               <div className="text-[11px] text-[#70787f] pt-2 border-t border-slate-100">
-                Cập nhật gần nhất bởi <span className="font-semibold text-[#111c2d]">{channelConfig.updatedBy}</span> lúc{' '}
+                Cập nhật gần nhất bởi <span className="font-semibold text-[#202924]">{channelConfig.updatedBy}</span> lúc{' '}
                 {channelConfig.updatedAt ? new Date(channelConfig.updatedAt).toLocaleString('vi-VN') : '-'}
               </div>
             )}
@@ -983,7 +983,7 @@ export default function StaffRbacPage() {
                 placeholder="Nguyễn Văn A"
                 value={newStaff.name}
                 onChange={e => setNewStaff({ ...newStaff, name: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#004967]"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#253c33]"
               />
             </div>
             <div>
@@ -993,7 +993,7 @@ export default function StaffRbacPage() {
                 placeholder="nhanvien@optivision.vn"
                 value={newStaff.email}
                 onChange={e => setNewStaff({ ...newStaff, email: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#004967]"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#253c33]"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -1004,7 +1004,7 @@ export default function StaffRbacPage() {
                   placeholder="0912345678"
                   value={newStaff.phone}
                   onChange={e => setNewStaff({ ...newStaff, phone: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#004967]"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#253c33]"
                 />
               </div>
               <div>
@@ -1015,7 +1015,7 @@ export default function StaffRbacPage() {
                     const r = ROLES_LIST.find(x => x.code === e.target.value);
                     setNewStaff({ ...newStaff, roleCode: e.target.value, roleName: r?.label || '' });
                   }}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#004967]"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#253c33]"
                 >
                   <option value="cashier">Thu Ngân POS &amp; Bán Lẻ</option>
                   <option value="optometrist">Bác Sĩ / KTV Khúc Xạ (CCHN)</option>
@@ -1032,7 +1032,7 @@ export default function StaffRbacPage() {
                 placeholder="Flagship Q.1 (TP.HCM)"
                 value={newStaff.branch}
                 onChange={e => setNewStaff({ ...newStaff, branch: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#004967]"
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#253c33]"
               />
             </div>
             <div>
@@ -1052,9 +1052,9 @@ export default function StaffRbacPage() {
                   value={newStaff.avatarUrl?.startsWith('data:image/') ? '' : (newStaff.avatarUrl || '')}
                   onChange={e => setNewStaff({ ...newStaff, avatarUrl: e.target.value })}
                   placeholder={newStaff.avatarUrl?.startsWith('data:image/') ? 'Đã tải ảnh từ máy' : 'https://...'}
-                  className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#004967]"
+                  className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#253c33]"
                 />
-                <label className="px-2.5 py-2 rounded-lg bg-[#e7eeff] hover:bg-[#dee8ff] text-[#004967] text-xs font-bold cursor-pointer shrink-0">
+                <label className="px-2.5 py-2 rounded-lg bg-[#eceee7] hover:bg-[#e4e4db] text-[#253c33] text-xs font-bold cursor-pointer shrink-0">
                   Tải ảnh
                   <input
                     type="file"
@@ -1107,7 +1107,7 @@ export default function StaffRbacPage() {
                     <div className="text-slate-500">{editingStaff.email}</div>
                   </div>
                 </div>
-                <span className="px-2 py-1 bg-[#dee8ff] text-[#004967] rounded font-semibold">{editingStaff.roleName}</span>
+                <span className="px-2 py-1 bg-[#e4e4db] text-[#253c33] rounded font-semibold">{editingStaff.roleName}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
@@ -1164,7 +1164,7 @@ export default function StaffRbacPage() {
                   <button
                     type="button"
                     onClick={() => setEditingStaff((prev) => ({ ...prev, avatarUrl: DEFAULT_AVATAR_URL }))}
-                    className="text-[11px] text-[#086288] underline cursor-pointer"
+                    className="text-[11px] text-[#30483b] underline cursor-pointer"
                   >
                     Mặc định
                   </button>
@@ -1177,7 +1177,7 @@ export default function StaffRbacPage() {
                     placeholder={editingStaff.avatarUrl?.startsWith('data:image/') ? 'Đã tải ảnh từ máy' : 'https://...'}
                     className="flex-1 p-2 border border-slate-300 rounded text-xs"
                   />
-                  <label className="px-3 py-2 rounded bg-[#e7eeff] hover:bg-[#dee8ff] text-[#004967] font-bold cursor-pointer shrink-0">
+                  <label className="px-3 py-2 rounded bg-[#eceee7] hover:bg-[#e4e4db] text-[#253c33] font-bold cursor-pointer shrink-0">
                     Tải ảnh
                     <input
                       type="file"

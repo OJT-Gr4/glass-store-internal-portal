@@ -66,7 +66,7 @@ export function getAuthorizedMenuItems(userRole, currentPath) {
         icon: route.icon,
         label: route.label,
         style: isSelected
-          ? { background: '#4D8DBA', color: '#ffffff', borderRadius: 8, fontWeight: 700, margin: '4px 0' }
+          ? { background: '#61776a', color: '#ffffff', borderRadius: 8, fontWeight: 700, margin: '4px 0' }
           : { color: '#e0f2fe', margin: '4px 0' }
       };
     });

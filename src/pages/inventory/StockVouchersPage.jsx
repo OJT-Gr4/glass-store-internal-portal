@@ -376,7 +376,7 @@ export default function StockVouchersPage() {
       title: 'Mã SKU',
       dataIndex: 'sku',
       key: 'sku',
-      render: (sku) => <span className="font-mono font-bold text-[#086288]">{sku}</span>
+      render: (sku) => <span className="font-mono font-bold text-[#30483b]">{sku}</span>
     },
     {
       title: 'Tên Sản Phẩm',
@@ -460,7 +460,7 @@ export default function StockVouchersPage() {
               type="primary"
               size="small"
               loading={adjustingSku === item.sku}
-              className="bg-[#086288]"
+              className="bg-[#30483b]"
             >
               Duyệt Chênh Lệch
             </Button>
@@ -478,11 +478,11 @@ export default function StockVouchersPage() {
   ];
 
   return (
-    <main className="min-h-screen w-full bg-[#f9f9ff]">
+    <main className="min-h-screen w-full bg-[#f9f8f4]">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-4 sm:p-6">
-        <header className="flex flex-col justify-between gap-4 rounded-xl border border-[#d8e3fb]/50 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+        <header className="flex flex-col justify-between gap-4 rounded-xl border border-[#dce2d8]/50 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#086288]">Kho vận / Nghiệp vụ kho</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#30483b]">Kho vận / Nghiệp vụ kho</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">Phiếu nhập, xuất và hàng lỗi</h1>
             <p className="mt-1 text-sm text-slate-600">Phiếu chỉ cập nhật tồn sau khi Admin duyệt.</p>
           </div>
@@ -514,7 +514,7 @@ export default function StockVouchersPage() {
           />
         )}
 
-        <section className="rounded-xl border border-[#d8e3fb]/50 bg-white p-4 shadow-sm sm:p-5">
+        <section className="rounded-xl border border-[#dce2d8]/50 bg-white p-4 shadow-sm sm:p-5">
           <Tabs activeKey={activeTab} items={tabs} onChange={setActiveTab} />
           {loading && !vouchers.length && !suppliers.length && !defects.length ? (
             <div className="flex justify-center py-12"><Spin /></div>

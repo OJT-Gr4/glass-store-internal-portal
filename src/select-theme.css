@@ -1,0 +1,35 @@
+#root select:not([multiple]):not([aria-label="Chọn địa điểm"]) {
+  appearance: none;
+  min-width: 0;
+  padding-right: 36px !important;
+  border-color: #dce2d8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2330483b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s;
+}
+#root select:not([multiple]):hover:not(:disabled) { border-color: #91a596; }
+#root select:not([multiple]):focus-visible { outline: 2px solid #75917a; outline-offset: 2px; }
+#root select:disabled { cursor: not-allowed; }
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector { border-color: #91a596 !important; }
+.ant-select-focused .ant-select-selector { border-color: #75917a !important; box-shadow: 0 0 0 2px #b7c9b76b !important; }
+.ant-select-dropdown { border: 1px solid #dce2d8; border-radius: 8px; box-shadow: 0 12px 32px #20372a24; }
+.ant-select-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) { background: #e5ede5; color: #253c33; }
+.ant-select-dropdown .ant-select-item-option-active:not(.ant-select-item-option-disabled) { background: #edf2eb; }
+@media (hover: hover) and (pointer: fine) {
+  @supports (appearance: base-select) {
+    #root select:not([multiple]):not([aria-label="Chọn địa điểm"]), #root select[aria-label="Chọn địa điểm"], #root select:not([multiple])::picker(select) { appearance: base-select; }
+    #root select:not([multiple])::picker-icon { display: none; }
+    #root select:not([multiple]) { display: inline-flex; align-items: center; line-height: 1.5; }
+    #root .internal-auth select:not([multiple]) { padding-top: 10px; padding-bottom: 10px; }
+    #root select:not([multiple])::picker(select) { border: 1px solid #dce2d8; border-radius: 8px; background: #fff; padding: 5px; box-shadow: 0 12px 32px #20372a24; }
+    #root select:not([multiple]) option { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 9px 11px; border-radius: 4px; color: #253c33; white-space: normal; line-height: 1.5; outline: none; }
+    #root select:not([multiple]) option:hover, #root select:not([multiple]) option:focus { background: #edf2eb; }
+    #root select:not([multiple]) option:checked { background: #e5ede5; font-weight: 600; }
+    #root select:not([multiple]) option::checkmark { display: none; }
+    #root select:not([multiple]) option::before { content: ''; width: 16px; height: 16px; flex: 0 0 16px; background-position: center; background-repeat: no-repeat; }
+    #root select:not([multiple]) option:checked::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2330483b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 4 4L19 6'/%3E%3C/svg%3E"); }
+    #root select:not([multiple]) option:focus-visible { outline: 2px solid #78937f; outline-offset: -2px; }
+  }
+}

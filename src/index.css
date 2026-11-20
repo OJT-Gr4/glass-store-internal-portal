@@ -24,6 +24,37 @@ html, body {
   flex-direction: column;
 }
 
+/* GlassStore internal sign-in: the same warm surfaces as the customer portal. */
+.internal-auth { background:#f9f8f4; color:#202924; font-family:'DM Sans',sans-serif; }
+.internal-auth > header { background:#fcfbf8; border-color:#e5e7dd; }
+.internal-auth > header > div { max-width:1120px; }
+.internal-auth > main { padding-top:48px; padding-bottom:48px; }
+.internal-auth .auth-card { border:1px solid #e4e5dc; border-radius:16px; box-shadow:0 16px 45px rgba(31,51,40,.07); }
+.internal-auth .auth-card > div:first-child { text-align:left; margin-bottom:24px; }
+.internal-auth .auth-card h1 { color:#253c33; font-size:24px; line-height:1.3; }
+.internal-auth .auth-card h1 + p { color:#657067; font-size:13px; line-height:1.6; margin-top:8px; }
+.internal-auth .auth-tabs { display:flex; gap:3px; padding:4px; background:#f1f2ec; border:1px solid #e4e5dc; }
+.internal-auth .auth-tabs button { flex:1; min-height:40px; padding:6px; border:0; border-radius:8px; background:transparent; box-shadow:none; color:#59635b; font-size:12px; font-weight:700; cursor:pointer; }
+.internal-auth .auth-tabs button[aria-pressed="true"] { color:white; background:#30483b; }
+.internal-auth .auth-card label { color:#303c34; font-size:12px; line-height:1.5; }
+.internal-auth .auth-card input:not([type="checkbox"]),.internal-auth .auth-card select { min-height:44px; border:1px solid #dedfd6; border-radius:9px; background:#fff; color:#25312a; font-size:13px; }
+.internal-auth .auth-card input::placeholder { color:#929b94; }
+.internal-auth .auth-card input:focus-visible,.internal-auth .auth-card select:focus-visible,.internal-auth button:focus-visible,.internal-auth-reset input:focus-visible,.internal-auth-reset button:focus-visible { outline:2px solid #75917a; outline-offset:2px; }
+.internal-auth .auth-card input[type="checkbox"] { width:17px; height:17px; flex:none; accent-color:#30483b; }
+.internal-auth .auth-card button[type="submit"] { background:#30483b; border-radius:9px; min-height:46px; box-shadow:none; }
+.internal-auth .auth-card button[type="submit"]:hover { background:#253c33; }
+.internal-auth > footer { color:#788279; background:#fcfbf8; border-color:#e5e7dd; }
+.internal-auth-reset .ant-modal-content { border-radius:16px; padding:28px; }
+.internal-auth-reset .ant-modal-title { color:#253c33; font-size:19px; }
+.internal-auth-reset input { min-width:0; border-color:#dedfd6; border-radius:9px; }
+.internal-auth-reset button:not(.ant-modal-close) { background:#30483b; border-radius:9px; }
+@media(max-width:640px) {
+  .internal-auth > main { padding:24px 16px; align-items:flex-start; }
+  .internal-auth .auth-card { padding:24px 20px; }
+  .internal-auth .auth-tabs button { font-size:11px; }
+  .internal-auth-reset .ant-modal-content { padding:24px 18px; }
+}
+
 @media print {
   body * {
     visibility: hidden;

@@ -94,6 +94,7 @@ export default function AuthPage({ onLoginSuccess }) {
       const userData = {
         username: trimmedStaffId,
         password: trimmedPassword,
+        branchCode: storeBranch,
         branchName: branchObj ? branchObj.label : 'Chi nhánh 01 - Lê Thánh Tôn'
       };
 
@@ -216,15 +217,15 @@ export default function AuthPage({ onLoginSuccess }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] flex flex-col justify-between antialiased">
+    <div className="internal-auth min-h-screen bg-[#f1f5f9] flex flex-col justify-between antialiased">
       {/* Simple Clean Header */}
       <header className="w-full bg-white border-b border-slate-200 py-3.5 px-6">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#004967] flex items-center justify-center text-white">
+            <div className="w-8 h-8 rounded-lg bg-[#253c33] flex items-center justify-center text-white">
               <span className="material-symbols-outlined text-[20px]">visibility</span>
             </div>
-            <span className="text-lg font-bold text-[#004967] tracking-tight">OptiVision</span>
+            <span className="text-lg font-bold text-[#253c33] tracking-tight">GlassStore</span>
           </div>
           <span className="text-xs text-slate-500 font-medium">Hệ Thống Nội Bộ</span>
         </div>
@@ -232,27 +233,28 @@ export default function AuthPage({ onLoginSuccess }) {
 
       {/* Main Container */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-8 my-auto">
-        <div className={`w-full ${authMode === 'login' ? 'max-w-[520px]' : 'max-w-[680px]'} bg-white rounded-2xl shadow-sm border border-slate-200 p-7 sm:p-10 transition-all`}>
+        <div className={`auth-card w-full ${authMode === 'login' ? 'max-w-[520px]' : 'max-w-[680px]'} bg-white rounded-2xl shadow-sm border border-slate-200 p-7 sm:p-10 transition-all`}>
           {/* Form Header Title */}
           <div className="text-center mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold text-[#004967] tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#253c33] tracking-tight">
               {authMode === 'login' ? 'Đăng Nhập Nội Bộ' : 'Đăng Ký Nhân Sự Nội Bộ'}
             </h1>
             <p className="text-xs text-slate-500 mt-1">
               {authMode === 'login'
-                ? 'Hệ thống quản trị bán hàng & khám khúc xạ chuỗi OptiVision'
+                ? 'Không gian làm việc dành cho đội ngũ GlassStore'
                 : 'Đăng ký thông tin công tác dành cho nhân viên mới'}
             </p>
           </div>
 
           {/* Form Switcher Tabs */}
-          <div className="flex rounded-xl bg-slate-100 p-1 mb-4">
+          <div className="auth-tabs flex rounded-xl bg-slate-100 p-1 mb-4" aria-label="Chọn chức năng tài khoản">
             <button
               type="button"
               onClick={() => setAuthMode('login')}
+              aria-pressed={authMode === 'login' && !resetModalOpen}
               className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                 authMode === 'login'
-                  ? 'bg-white text-[#004967] shadow-sm'
+                  ? 'bg-white text-[#253c33] shadow-sm'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -261,14 +263,18 @@ export default function AuthPage({ onLoginSuccess }) {
             <button
               type="button"
               onClick={() => setAuthMode('register')}
+              aria-pressed={authMode === 'register' && !resetModalOpen}
               className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                 authMode === 'register'
-                  ? 'bg-white text-[#004967] shadow-sm'
+                  ? 'bg-white text-[#253c33] shadow-sm'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               Đăng Ký Tài Khoản
             </button>
+            <button type="button" aria-pressed={resetModalOpen} onClick={() => {
+              setResetIdentifier(staffId); setResetChallenge(null); setResetOtpCode(''); setResetNewPassword(''); setResetModalOpen(true);
+            }}>Quên mật khẩu</button>
           </div>
 
           {/* Department Select (Register mode only) */}
@@ -287,7 +293,7 @@ export default function AuthPage({ onLoginSuccess }) {
                       onClick={() => setRegRole(item.key)}
                       className={`py-1.5 px-1 rounded-lg text-xs font-bold text-center transition-all ${
                         isActive
-                          ? 'bg-[#004967] text-white shadow-sm'
+                          ? 'bg-[#253c33] text-white shadow-sm'
                           : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                       }`}
                     >
@@ -301,14 +307,15 @@ export default function AuthPage({ onLoginSuccess }) {
 
           {/* ================= FORM LOGIN ================= */}
           {authMode === 'login' ? (
-            <form onSubmit={handleStaffLogin} className="flex flex-col gap-4">
+            <form noValidate onSubmit={handleStaffLogin} className="flex flex-col gap-4">
               {/* Branch */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-slate-700">Chi nhánh làm việc</label>
+                <label htmlFor="staff-branch" className="text-xs font-semibold text-slate-700">Chi nhánh làm việc</label>
                 <select
+                  id="staff-branch"
                   value={storeBranch}
                   onChange={(e) => setStoreBranch(e.target.value)}
-                  className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967] bg-white cursor-pointer"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33] bg-white cursor-pointer"
                 >
                   {BRANCH_OPTIONS.map((b) => (
                     <option key={b.value} value={b.value}>{b.label}</option>
@@ -318,22 +325,23 @@ export default function AuthPage({ onLoginSuccess }) {
 
               {/* Staff ID / Username */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-slate-700">Tài khoản / Email / Mã nhân viên</label>
+                <label htmlFor="staff-login" className="text-xs font-semibold text-slate-700">Tài khoản / Email / Mã nhân viên</label>
                 <input
+                  id="staff-login"
                   type="text"
                   required
                   autoComplete="username"
                   value={staffId}
                   onChange={(e) => setStaffId(e.target.value)}
                   placeholder="Nhập username, email hoặc mã NV..."
-                  className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967]"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33]"
                 />
               </div>
 
               {/* Password */}
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-700">Mật khẩu</label>
+                  <label htmlFor="staff-password" className="text-xs font-semibold text-slate-700">Mật khẩu</label>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -343,13 +351,14 @@ export default function AuthPage({ onLoginSuccess }) {
                   </button>
                 </div>
                 <input
+                  id="staff-password"
                   type={showPassword ? 'text' : 'password'}
                   required
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Nhập mật khẩu..."
-                  className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967]"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33]"
                 />
               </div>
 
@@ -357,13 +366,13 @@ export default function AuthPage({ onLoginSuccess }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-11 mt-2 rounded-xl text-sm font-semibold bg-[#004967] hover:bg-[#086288] text-white text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-75 cursor-pointer"
+                className="w-full h-11 mt-2 rounded-xl text-sm font-semibold bg-[#253c33] hover:bg-[#30483b] text-white text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-75 cursor-pointer"
               >
                 {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </button>
 
               <div className="text-center pt-2">
-                <span
+                <button type="button"
                   onClick={() => {
                     setResetIdentifier(staffId);
                     setResetChallenge(null);
@@ -371,15 +380,15 @@ export default function AuthPage({ onLoginSuccess }) {
                     setResetNewPassword('');
                     setResetModalOpen(true);
                   }}
-                  className="text-xs text-slate-500 hover:text-[#004967] cursor-pointer"
+                  className="text-xs text-slate-500 hover:text-[#253c33] cursor-pointer"
                 >
                   Quên mật khẩu / Xác thực OTP?
-                </span>
+                </button>
               </div>
             </form>
           ) : (
             /* ================= FORM REGISTER ================= */
-            <form onSubmit={handleStaffRegister} className="flex flex-col gap-3.5">
+            <form noValidate onSubmit={handleStaffRegister} className="flex flex-col gap-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold text-slate-700">Họ và tên *</label>
@@ -389,7 +398,7 @@ export default function AuthPage({ onLoginSuccess }) {
                     value={regFullName}
                     onChange={(e) => setRegFullName(e.target.value)}
                     placeholder="Nguyễn Văn A"
-                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967]"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33]"
                   />
                 </div>
 
@@ -401,7 +410,7 @@ export default function AuthPage({ onLoginSuccess }) {
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
                     placeholder="nhanvien@optivision.vn"
-                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967]"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33]"
                   />
                 </div>
               </div>
@@ -415,7 +424,7 @@ export default function AuthPage({ onLoginSuccess }) {
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value)}
                     placeholder="0912345678"
-                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967]"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33]"
                   />
                 </div>
 
@@ -424,7 +433,7 @@ export default function AuthPage({ onLoginSuccess }) {
                   <select
                     value={regBranch}
                     onChange={(e) => setRegBranch(e.target.value)}
-                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967] bg-white cursor-pointer"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33] bg-white cursor-pointer"
                   >
                     {BRANCH_OPTIONS.map((b) => (
                       <option key={b.value} value={b.value}>{b.label}</option>
@@ -442,7 +451,7 @@ export default function AuthPage({ onLoginSuccess }) {
                     value={regMedicalCert}
                     onChange={(e) => setRegMedicalCert(e.target.value)}
                     placeholder="Số chứng chỉ khúc xạ..."
-                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967]"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33]"
                   />
                 </div>
               )}
@@ -457,7 +466,7 @@ export default function AuthPage({ onLoginSuccess }) {
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
                     placeholder="Tối thiểu 8 ký tự..."
-                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#004967]"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:border-[#253c33]"
                   />
                   {regPassword && (
                     <div className="flex items-center justify-between text-[11px] pt-1">
@@ -480,7 +489,7 @@ export default function AuthPage({ onLoginSuccess }) {
                         ? 'border-2 border-emerald-500 bg-emerald-50/30 text-slate-900'
                         : isPasswordMismatch
                         ? 'border-2 border-rose-400 bg-rose-50/30 text-slate-900'
-                        : 'border border-slate-300 text-slate-800 focus:border-[#004967]'
+                        : 'border border-slate-300 text-slate-800 focus:border-[#253c33]'
                     }`}
                   />
                 </div>
@@ -492,7 +501,7 @@ export default function AuthPage({ onLoginSuccess }) {
                   type="checkbox"
                   checked={regAgreed}
                   onChange={(e) => setRegAgreed(e.target.checked)}
-                  className="rounded text-[#004967] focus:ring-[#004967]"
+                  className="rounded text-[#253c33] focus:ring-[#253c33]"
                 />
                 <span>Tôi đồng ý với quy định bảo mật thông tin nội bộ.</span>
               </label>
@@ -501,7 +510,7 @@ export default function AuthPage({ onLoginSuccess }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-11 mt-2 rounded-xl text-sm font-semibold bg-[#004967] hover:bg-[#086288] text-white text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-75 cursor-pointer"
+                className="w-full h-11 mt-2 rounded-xl text-sm font-semibold bg-[#253c33] hover:bg-[#30483b] text-white text-xs font-bold shadow-sm transition-all active:scale-[0.99] disabled:opacity-75 cursor-pointer"
               >
                 {isSubmitting ? 'Đang gửi hồ sơ...' : 'Đăng ký tài khoản'}
               </button>
@@ -512,69 +521,68 @@ export default function AuthPage({ onLoginSuccess }) {
 
       {/* Simple Clean Footer */}
       <footer className="w-full py-4 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
-        © 2026 OptiVision Eyecare Systems.
+        © 2026 GlassStore · Cổng vận hành nội bộ
       </footer>
 
       <Modal
-        title="Đặt lại mật khẩu qua SMS OTP"
+        title="Khôi phục mật khẩu"
+        className="internal-auth-reset"
         open={resetModalOpen}
         onCancel={() => setResetModalOpen(false)}
         footer={null}
       >
         <div className="space-y-3 pt-2">
           <div>
-            <label className="text-xs font-semibold text-slate-700">Tài khoản / Email / Mã NV</label>
-            <input
-              type="text"
-              value={resetIdentifier}
-              onChange={(e) => setResetIdentifier(e.target.value)}
-              placeholder="Nhập username, email hoặc mã NV..."
-              className="w-full h-10 px-3 rounded-lg border border-slate-300 text-xs mt-1"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-700">Số điện thoại đã đăng ký</label>
+            <label className="text-xs font-semibold text-slate-700">Email tài khoản nhân viên *</label>
             <div className="flex gap-2 mt-1">
               <input
-                type="tel"
-                value={resetPhone}
-                onChange={(e) => setResetPhone(e.target.value)}
-                placeholder="0901000000"
+                type="email"
+                value={resetIdentifier}
+                onChange={(e) => setResetIdentifier(e.target.value)}
+                placeholder="Nhập email tài khoản (VD: adminoptic@gmail.com)..."
                 className="flex-1 h-10 px-3 rounded-lg border border-slate-300 text-xs"
               />
               <button
                 type="button"
                 onClick={async () => {
+                  const targetEmail = resetIdentifier.trim();
+                  if (!targetEmail) {
+                    message.error('Vui lòng nhập địa chỉ email tài khoản!');
+                    return;
+                  }
                   try {
                     const chg = await authApi.sendOtp({
-                      identifier: resetIdentifier.trim(),
-                      phoneNumber: resetPhone.trim() || undefined,
+                      identifier: targetEmail,
+                      email: targetEmail,
                       purpose: 'PASSWORD_RESET',
                     });
                     setResetChallenge(chg);
-                    message.success(`Đã gửi mã OTP tới ${chg.maskedPhone}`);
+                    message.success(`Đã gửi mã OTP xác thực tới Gmail: ${chg.maskedEmail || targetEmail}`);
                   } catch (err) {
-                    message.error(err.message || 'Không gửi được mã OTP');
+                    message.error(err.message || 'Không gửi được mã OTP qua Gmail');
                   }
                 }}
-                className="px-3 h-10 rounded-lg bg-[#004967] text-white text-xs font-bold cursor-pointer"
+                className="px-3 h-10 rounded-lg bg-[#253c33] hover:bg-[#1d3028] text-white text-xs font-bold cursor-pointer transition"
               >
-                Gửi OTP
+                Gửi OTP qua Gmail
               </button>
             </div>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Mã xác thực 6 chữ số sẽ được gửi trực tiếp đến hộp thư Gmail của bạn.
+            </p>
           </div>
           {resetChallenge && (
             <>
               <div>
                 <label className="text-xs font-semibold text-slate-700">
-                  Mã OTP (đã gửi tới {resetChallenge.maskedPhone})
+                  Mã OTP 6 số (đã gửi tới Gmail {resetChallenge.maskedEmail || resetIdentifier})
                 </label>
                 <input
                   type="text"
                   maxLength={6}
                   value={resetOtpCode}
                   onChange={(e) => setResetOtpCode(e.target.value.replace(/\D/g, ''))}
-                  placeholder="Nhập 6 chữ số OTP"
+                  placeholder="Nhập 6 chữ số OTP từ Gmail"
                   className="w-full h-10 px-3 rounded-lg border border-slate-300 text-xs font-mono mt-1"
                 />
               </div>

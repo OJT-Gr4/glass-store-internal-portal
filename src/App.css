@@ -2,7 +2,7 @@
 .ant-table-thead > tr > th {
   background-color: #f1f5f9 !important;
   font-weight: 700 !important;
-  color: #086288 !important;
+  color: #30483b !important;
 }
 
 .ant-card {
@@ -10,11 +10,11 @@
 }
 
 .ant-btn-primary {
-  background-color: #086288 !important;
-  border-color: #086288 !important;
+  background-color: #30483b !important;
+  border-color: #30483b !important;
 }
 
 .ant-btn-primary:hover {
-  background-color: #4D8DBA !important;
-  border-color: #4D8DBA !important;
+  background-color: #61776a !important;
+  border-color: #61776a !important;
 }

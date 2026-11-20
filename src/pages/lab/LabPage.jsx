@@ -2,8 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { labApi } from '../../api/labApi';
 import { Alert, message, Modal } from 'antd';
+import { useAuth } from '../../context/AuthContext';
+import { ROLES } from '../../routes/rolesConfig';
 
 export default function LabPage() {
+  const { user } = useAuth();
+  const canOperate = [ROLES.ADMIN, ROLES.LAB].includes(user?.role);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -64,6 +68,7 @@ export default function LabPage() {
             tray: j.trayNumber || `Khay #${j.id}`,
             orderId: j.orderCode || (j.orderId ? `#${j.orderId}` : 'Chưa liên kết đơn'),
             customer: j.customerName || j.prescription?.customerName || 'Khách hàng',
+            customerTier: j.customerTier,
             phone: j.customerPhone || '—',
             frame: j.frameName || j.frameSku || 'Không kèm gọng',
             lens: j.lensName || j.lensSku || 'Chưa có thông tin tròng',
@@ -101,6 +106,7 @@ export default function LabPage() {
 
   // Handle action status updates
   const handleUpdateJobStatus = async (dbId, newStatus, successMsg) => {
+    if (!canOperate) { message.info('Chỉ quản lý hoặc kỹ thuật viên xưởng được thao tác gia công.'); return; }
     try {
       setLoading(true);
       await labApi.updateLabJobStatus(dbId, { status: newStatus });
@@ -155,12 +161,12 @@ export default function LabPage() {
   });
 
   return (
-    <div className="w-full min-h-screen bg-[#f9f9ff]">
+    <div className="w-full min-h-screen bg-[#f9f8f4]">
       <div className="max-w-[1600px] mx-auto p-3.5 sm:p-5 flex flex-col gap-3.5">
         {syncError && <Alert type="error" showIcon message={syncError} />}
 
         {/* 1. CLEAN HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest p-3.5 rounded-xl shadow-xs border border-[#d8e3fb]/40">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest p-3.5 rounded-xl shadow-xs border border-[#dce2d8]/40">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <span className="font-label-md text-label-md text-outline">XƯỞNG GIA CÔNG LAB</span>
@@ -210,7 +216,7 @@ export default function LabPage() {
         {/* 2. 4 CORE METRIC CARDS (Dữ liệu đếm động theo trạng thái thực tế) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Card 1: Tổng Lệnh Hôm Nay */}
-          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-outline uppercase tracking-wider">Tổng Lệnh Hôm Nay</span>
               <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -221,13 +227,13 @@ export default function LabPage() {
               <span className="font-display-lg text-display-lg text-on-surface font-bold">{totalCount}</span>
               <span className="font-label-md text-label-md text-outline">lệnh gia công</span>
             </div>
-            <div className="mt-1 pt-1.5 border-t border-[#e7eeff] text-body-sm text-[11px] text-outline">
+            <div className="mt-1 pt-1.5 border-t border-[#eceee7] text-body-sm text-[11px] text-outline">
               {waitingCount} Chờ nạp • {inProgressCount} Đang mài
             </div>
           </div>
 
           {/* Card 2: Chờ Gán Máy & Phôi (PENDING) */}
-          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-outline uppercase tracking-wider">Chờ Gán Máy &amp; Phôi</span>
               <div className="w-7 h-7 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
@@ -238,13 +244,13 @@ export default function LabPage() {
               <span className="font-display-lg text-display-lg text-secondary font-bold">{waitingCount}</span>
               <span className="font-label-md text-label-md text-outline">khay chờ nạp</span>
             </div>
-            <div className="mt-1 pt-1.5 border-t border-[#e7eeff] text-body-sm text-[11px] text-secondary">
+            <div className="mt-1 pt-1.5 border-t border-[#eceee7] text-body-sm text-[11px] text-secondary">
               Có sẵn phôi tại ngăn tủ Lab
             </div>
           </div>
 
           {/* Card 3: Đang Mài Tự Động (IN_PROGRESS) */}
-          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-outline uppercase tracking-wider">Đang Mài Tự Động</span>
               <div className="w-7 h-7 rounded-lg bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
@@ -255,13 +261,13 @@ export default function LabPage() {
               <span className="font-display-lg text-display-lg text-primary font-bold">{inProgressCount}</span>
               <span className="font-label-md text-label-md text-outline">máy đang cắt</span>
             </div>
-            <div className="mt-1 pt-1.5 border-t border-[#e7eeff] text-body-sm text-[11px] text-outline">
+            <div className="mt-1 pt-1.5 border-t border-[#eceee7] text-body-sm text-[11px] text-outline">
               {inProgressCount > 0 ? `${inProgressCount} máy đang chạy tải` : 'Tất cả máy đang chờ lệnh'}
             </div>
           </div>
 
           {/* Card 4: Chờ QC Kiểm Tra (QC_PENDING) */}
-          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-outline uppercase tracking-wider">Chờ QC Kiểm Tra</span>
               <div className="w-7 h-7 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center">
@@ -272,14 +278,14 @@ export default function LabPage() {
               <span className="font-display-lg text-display-lg text-on-surface font-bold">{qcPendingCount}</span>
               <span className="font-label-md text-label-md text-outline">đơn sẵn sàng</span>
             </div>
-            <div className="mt-1 pt-1.5 border-t border-[#e7eeff] text-body-sm text-[11px] text-outline">
+            <div className="mt-1 pt-1.5 border-t border-[#eceee7] text-body-sm text-[11px] text-outline">
               Lensmeter &amp; bàn giao đóng gói
             </div>
           </div>
         </div>
 
         {/* 3. COMPACT MACHINE STATUS TELEMETRY STRIP (Dynamic Machine State) */}
-        <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 space-y-2">
+        <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-primary text-[16px]">monitor_heart</span>
@@ -290,7 +296,7 @@ export default function LabPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
             {/* Machine 1 */}
-            <div className="p-2.5 rounded-xl bg-surface-container-low border border-[#d8e3fb]/40 flex flex-col justify-between relative overflow-hidden">
+            <div className="p-2.5 rounded-xl bg-surface-container-low border border-[#dce2d8]/40 flex flex-col justify-between relative overflow-hidden">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -327,7 +333,7 @@ export default function LabPage() {
             </div>
 
             {/* Machine 2 */}
-            <div className="p-2.5 rounded-xl bg-surface-container-low border border-[#d8e3fb]/40 flex flex-col justify-between relative overflow-hidden">
+            <div className="p-2.5 rounded-xl bg-surface-container-low border border-[#dce2d8]/40 flex flex-col justify-between relative overflow-hidden">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -364,7 +370,7 @@ export default function LabPage() {
             </div>
 
             {/* Machine 3 */}
-            <div className="p-2.5 rounded-xl bg-surface-container-low border border-[#d8e3fb]/40 flex flex-col justify-between relative overflow-hidden">
+            <div className="p-2.5 rounded-xl bg-surface-container-low border border-[#dce2d8]/40 flex flex-col justify-between relative overflow-hidden">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -403,7 +409,7 @@ export default function LabPage() {
         </div>
 
         {/* 4. STREAMLINED LAB QUEUE TABLE */}
-        <div className="bg-surface-container-lowest rounded-xl p-3 shadow-xs border border-[#d8e3fb]/40 space-y-2.5">
+        <div className="bg-surface-container-lowest rounded-xl p-3 shadow-xs border border-[#dce2d8]/40 space-y-2.5">
           {/* Search & Filter pills in one compact bar */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="relative flex-1 min-w-[260px]">
@@ -442,7 +448,7 @@ export default function LabPage() {
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto rounded-xl border border-[#d8e3fb]/40">
+          <div className="overflow-x-auto rounded-xl border border-[#dce2d8]/40">
             <table className="w-full text-left font-body-md text-body-md">
               <thead className="bg-surface-container-low text-outline font-label-md text-label-md uppercase">
                 <tr>
@@ -455,7 +461,7 @@ export default function LabPage() {
                   <th className="py-2.5 px-3 text-right">Thao Tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#d8e3fb]/30 text-on-surface">
+              <tbody className="divide-y divide-[#dce2d8]/30 text-on-surface">
                 {filteredOrders.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-outline">
@@ -483,6 +489,7 @@ export default function LabPage() {
                       </td>
                       <td className="py-2.5 px-3">
                         <strong className="text-on-surface text-xs block">{order.customer}</strong>
+                        <span className="inline-block my-1 rounded-full border border-[#dce2d8] bg-[#eceee7] px-2 py-0.5 text-[10px] font-semibold text-[#253c33]">{order.customerTier || 'Chưa tải được hạng'}</span><br />
                         <span className="text-[10px] text-outline">{order.orderId}</span>
                       </td>
                       <td className="py-2.5 px-3 max-w-xs">
@@ -571,8 +578,8 @@ export default function LabPage() {
         {/* 5. SLIDE-OVER DETAIL MODAL FOR SELECTED ORDER */}
         {selectedOrder && (
           <div className="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-surface-container-lowest max-w-lg w-full rounded-xl p-4 shadow-xl border border-[#d8e3fb]/40 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#e7eeff]">
+            <div className="bg-surface-container-lowest max-w-lg w-full rounded-xl p-4 shadow-xl border border-[#dce2d8]/40 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#eceee7]">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-label-mono font-bold text-primary text-sm">{selectedOrder.id}</span>
@@ -580,19 +587,20 @@ export default function LabPage() {
                     <span className={`px-2 py-0.2 rounded-full text-[10px] font-semibold ${selectedOrder.statusClass}`}>{selectedOrder.statusLabel}</span>
                   </div>
                   <span className="text-xs text-outline">Đơn gốc: {selectedOrder.orderId} • Khách: {selectedOrder.customer} ({selectedOrder.phone})</span>
+                  <span className="block text-xs font-semibold text-primary mt-1">{selectedOrder.customerTier || 'Chưa tải được hạng'}</span>
                 </div>
                 <button onClick={() => setSelectedOrder(null)} className="p-1 rounded-lg text-outline hover:text-on-surface cursor-pointer">
                   <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
               </div>
 
-              <div className="p-2.5 bg-surface-container-low rounded-xl text-body-sm space-y-1.5 border border-[#d8e3fb]/30">
+              <div className="p-2.5 bg-surface-container-low rounded-xl text-body-sm space-y-1.5 border border-[#dce2d8]/30">
                 <div><strong>Gọng kính:</strong> {selectedOrder.frame}</div>
                 <div><strong>Tròng kính:</strong> {selectedOrder.lens}</div>
                 <div className="font-label-mono text-primary font-semibold">Thông số: {selectedOrder.rxSummary}</div>
                 <div><strong>Máy chỉ định:</strong> {selectedOrder.machine} • <strong>KTV:</strong> {selectedOrder.tech}</div>
                 {selectedOrder.qcNotes && (
-                  <div className="text-xs text-error font-medium pt-1 border-t border-[#e7eeff]">
+                  <div className="text-xs text-error font-medium pt-1 border-t border-[#eceee7]">
                     <strong>Ghi chú QC:</strong> {selectedOrder.qcNotes}
                   </div>
                 )}

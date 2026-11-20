@@ -386,7 +386,7 @@
 
 .optivision-form-input:focus {
   background: #ffffff;
-  border-color: #086288;
+  border-color: #30483b;
   box-shadow: 0 0 0 2px rgba(8, 98, 136, 0.15);
 }
 
@@ -406,7 +406,7 @@
 
 .optivision-form-select:focus {
   background: #ffffff;
-  border-color: #086288;
+  border-color: #30483b;
 }
 
 /* 6 OTP boxes - perfectly responsive with NO overflow */
@@ -491,7 +491,7 @@
 }
 
 .optivision-sub-link:hover {
-  color: #086288;
+  color: #30483b;
 }
 
 /* SSO Divider */

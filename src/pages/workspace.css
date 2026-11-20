@@ -9,7 +9,7 @@
 .workspace-filter { min-width: 170px; height: 32px; border: 1px solid #d9d9d9; border-radius: 6px; padding: 0 10px; background: white; color: #425466; font-size: 14px; }
 .workspace-name { font-weight: 600; }
 .workspace-muted { color: #74808d; font-size: 13px; line-height: 1.7; }
-.workspace-link { border: 0; background: none; padding: 0; color: #086288; cursor: pointer; font-weight: 600; text-align: left; overflow-wrap: anywhere; }
+.workspace-link { border: 0; background: none; padding: 0; color: #30483b; cursor: pointer; font-weight: 600; text-align: left; overflow-wrap: anywhere; }
 .workspace-link:hover { text-decoration: underline; }
 .simple-workspace .ant-table-thead > tr > th { background: #f8fafc; color: #74808d; font-size: 12px; font-weight: 500; }
 .simple-workspace .ant-table-tbody > tr > td { padding-top: 19px; padding-bottom: 19px; }

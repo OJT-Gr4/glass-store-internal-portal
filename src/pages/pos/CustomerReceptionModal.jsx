@@ -6,6 +6,7 @@ export default function CustomerReceptionModal({
   open,
   onClose,
   customers = [],
+  loading = false,
   onSelectCustomer,
   onCustomerCreated
 }) {
@@ -104,11 +105,11 @@ export default function CustomerReceptionModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#004967] text-[26px]">
+            <span className="material-symbols-outlined text-[#253c33] text-[26px]">
               person_add
             </span>
             <div>
-              <h3 className="text-base text-[#111c2d] font-bold">
+              <h3 className="text-base text-[#202924] font-bold">
                 Tiếp Nhận Khách Hàng
               </h3>
               <p className="text-xs text-slate-500">
@@ -119,7 +120,7 @@ export default function CustomerReceptionModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-[#70787f] hover:text-[#111c2d] transition-colors p-1 rounded-lg hover:bg-slate-100 cursor-pointer"
+            className="text-[#70787f] hover:text-[#202924] transition-colors p-1 rounded-lg hover:bg-slate-100 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[24px]">close</span>
           </button>
@@ -132,7 +133,7 @@ export default function CustomerReceptionModal({
             onClick={() => { setTab('search'); setErrorMessage(''); }}
             className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               tab === 'search'
-                ? 'bg-white text-[#004967] shadow-xs'
+                ? 'bg-white text-[#253c33] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -144,7 +145,7 @@ export default function CustomerReceptionModal({
             onClick={() => { setTab('create'); setErrorMessage(''); }}
             className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               tab === 'create'
-                ? 'bg-[#004967] text-white shadow-xs'
+                ? 'bg-[#253c33] text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -172,7 +173,7 @@ export default function CustomerReceptionModal({
                 placeholder="Tìm theo tên, số điện thoại hoặc email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#f0f3ff] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#f1f2ec] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
                 autoFocus
               />
             </div>
@@ -185,16 +186,25 @@ export default function CustomerReceptionModal({
                     onSelectCustomer(c);
                     onClose();
                   }}
-                  className="p-3 rounded-xl bg-[#f8faff] hover:bg-[#e7eeff] border border-slate-100 hover:border-[#004967]/20 transition-all cursor-pointer flex items-center justify-between group"
+                  className="p-3 rounded-xl bg-[#f8faff] hover:bg-[#eceee7] border border-slate-100 hover:border-[#253c33]/20 transition-all cursor-pointer flex items-center justify-between group"
                 >
                   <div className="min-w-0 pr-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-[#111c2d] truncate">
+                    <div className="flex items-center flex-wrap gap-2">
+                      <span className="font-bold text-xs text-[#202924] truncate">
                         {c.fullName}
                       </span>
                       {c.id && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
                           #{c.id}
+                        </span>
+                      )}
+                      {c.tier && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                          c.tier.includes('Kim Cương') || c.tier.includes('Diamond') ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                          c.tier.includes('Vàng') || c.tier.includes('Gold') ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                          'bg-sky-100 text-sky-700 border border-sky-200'
+                        }`}>
+                          {c.tier}
                         </span>
                       )}
                     </div>
@@ -205,14 +215,15 @@ export default function CustomerReceptionModal({
                   </div>
                   <button
                     type="button"
-                    className="shrink-0 px-3 py-1 rounded-lg bg-[#004967] text-white text-xs font-semibold group-hover:bg-[#003850] transition-colors"
+                    className="shrink-0 px-3 py-1 rounded-lg bg-[#253c33] text-white text-xs font-semibold group-hover:bg-[#1d3028] transition-colors"
                   >
                     Tiếp nhận
                   </button>
                 </div>
               ))}
 
-              {filteredCustomers.length === 0 && (
+              {loading && <p role="status" className="p-4 text-xs text-[#40484e]">Đang tải khách hàng và hạng thành viên…</p>}
+              {!loading && filteredCustomers.length === 0 && (
                 <div className="py-10 text-center text-[#70787f] text-xs flex flex-col items-center gap-2">
                   <span className="material-symbols-outlined text-[32px] text-slate-300">
                     person_off
@@ -221,7 +232,7 @@ export default function CustomerReceptionModal({
                   <button
                     type="button"
                     onClick={() => setTab('create')}
-                    className="text-[#004967] font-bold hover:underline"
+                    className="text-[#253c33] font-bold hover:underline"
                   >
                     + Tạo nhanh khách mới ngay
                   </button>
@@ -233,7 +244,7 @@ export default function CustomerReceptionModal({
 
         {/* Tab 2: Create New Customer */}
         {tab === 'create' && (
-          <form onSubmit={handleCreateCustomer} className="space-y-3">
+          <form noValidate onSubmit={handleCreateCustomer} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
                 <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -244,7 +255,7 @@ export default function CustomerReceptionModal({
                   placeholder="Ví dụ: Nguyễn Văn A"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#f0f3ff] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                  className="w-full px-3 py-2 rounded-xl bg-[#f1f2ec] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
                   required
                   autoFocus
                 />
@@ -260,7 +271,7 @@ export default function CustomerReceptionModal({
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   maxLength={11}
-                  className="w-full px-3 py-2 rounded-xl bg-[#f0f3ff] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                  className="w-full px-3 py-2 rounded-xl bg-[#f1f2ec] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
                   required
                 />
               </div>
@@ -272,7 +283,7 @@ export default function CustomerReceptionModal({
                 <select
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#f0f3ff] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                  className="w-full px-3 py-2 rounded-xl bg-[#f1f2ec] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
                 >
                   <option value="NAM">Nam</option>
                   <option value="NU">Nữ</option>
@@ -289,7 +300,7 @@ export default function CustomerReceptionModal({
                   placeholder="khachhang@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#f0f3ff] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                  className="w-full px-3 py-2 rounded-xl bg-[#f1f2ec] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
                 />
               </div>
 
@@ -302,7 +313,7 @@ export default function CustomerReceptionModal({
                   placeholder="Số nhà, đường, phường/xã, quận/huyện..."
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#f0f3ff] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                  className="w-full px-3 py-2 rounded-xl bg-[#f1f2ec] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
                 />
               </div>
             </div>
@@ -312,7 +323,7 @@ export default function CustomerReceptionModal({
                 type="checkbox"
                 checked={marketingConsent}
                 onChange={(e) => setMarketingConsent(e.target.checked)}
-                className="rounded text-[#004967]"
+                className="rounded text-[#253c33]"
               />
               <span>Đồng ý nhận tin nhắn chăm sóc và thông báo bảo hành (SMS/Zalo)</span>
             </label>
@@ -329,7 +340,7 @@ export default function CustomerReceptionModal({
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2 rounded-xl bg-[#004967] hover:bg-[#003850] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-[#253c33] hover:bg-[#1d3028] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {submitting ? (
                   <>

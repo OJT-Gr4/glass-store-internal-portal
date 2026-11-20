@@ -103,12 +103,12 @@ export default function InventoryPage() {
     total + inventory.filter((item) => isLowStock(quantityAt(item, code))).length, 0);
 
   return (
-    <main className="min-h-screen w-full bg-[#f9f9ff]">
+    <main className="min-h-screen w-full bg-[#f9f8f4]">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-4 sm:p-6">
-        <header className="flex flex-col justify-between gap-4 rounded-xl border border-[#d8e3fb]/50 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+        <header className="flex flex-col justify-between gap-4 rounded-xl border border-[#dce2d8]/50 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#086288]">Kho vận / Tồn kho</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#30483b]">Kho vận / Tồn kho</p>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 Đồng bộ trực tiếp với quầy POS
@@ -121,7 +121,7 @@ export default function InventoryPage() {
             type="button"
             onClick={() => loadInventory(true)}
             disabled={loading}
-            className="rounded-lg bg-[#086288] px-4 py-2 text-sm font-semibold text-white hover:bg-[#064e6d] disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg bg-[#30483b] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3c594b] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? 'Đang tải…' : 'Làm mới'}
           </button>
@@ -130,7 +130,7 @@ export default function InventoryPage() {
               type="button"
               onClick={reconcileInventory}
               disabled={reconciliationLoading}
-              className="rounded-lg border border-[#086288] px-4 py-2 text-sm font-semibold text-[#086288] hover:bg-sky-50 disabled:opacity-60"
+              className="rounded-lg border border-[#30483b] px-4 py-2 text-sm font-semibold text-[#30483b] hover:bg-sky-50 disabled:opacity-60"
             >
               {reconciliationLoading ? 'Đang đối soát…' : 'Đối soát tồn'}
             </button>
@@ -138,7 +138,7 @@ export default function InventoryPage() {
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border border-[#d8e3fb]/50 bg-white p-4">
+          <div className="rounded-xl border border-[#dce2d8]/50 bg-white p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">SKU đang theo dõi</p>
             <p className="mt-1 text-2xl font-bold text-slate-900">{inventory.length}</p>
           </div>
@@ -160,7 +160,7 @@ export default function InventoryPage() {
           </div>
         )}
         {user?.role === ROLES.ADMIN && reconciliation && (
-          <section className="space-y-3 rounded-xl border border-[#d8e3fb]/50 bg-white p-4 shadow-sm" aria-label="Kết quả đối soát tồn kho">
+          <section className="space-y-3 rounded-xl border border-[#dce2d8]/50 bg-white p-4 shadow-sm" aria-label="Kết quả đối soát tồn kho">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-bold text-slate-900">Đối soát tồn kho</h2>
               <span className="text-xs text-slate-500">
@@ -217,7 +217,7 @@ export default function InventoryPage() {
           </section>
         )}
 
-        <section className="rounded-xl border border-[#d8e3fb]/50 bg-white p-4 shadow-sm">
+        <section className="rounded-xl border border-[#dce2d8]/50 bg-white p-4 shadow-sm">
           <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <label className="sr-only" htmlFor="inventory-search">Tìm SKU hoặc sản phẩm</label>
             <input
@@ -226,7 +226,7 @@ export default function InventoryPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Tìm SKU hoặc tên sản phẩm…"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#086288] md:max-w-md"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#30483b] md:max-w-md"
             />
             <div className="flex flex-wrap gap-2" aria-label="Lọc sản phẩm">
               {[
@@ -242,7 +242,7 @@ export default function InventoryPage() {
                   aria-pressed={category === value}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
                     category === value
-                      ? value === 'LOW_STOCK' ? 'bg-red-100 text-red-800' : 'bg-[#086288] text-white'
+                      ? value === 'LOW_STOCK' ? 'bg-red-100 text-red-800' : 'bg-[#30483b] text-white'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
@@ -276,7 +276,7 @@ export default function InventoryPage() {
                 <tbody className="divide-y divide-slate-100">
                   {filteredInventory.map((item) => (
                     <tr key={item.sku} className="hover:bg-slate-50">
-                      <th scope="row" className="whitespace-nowrap px-3 py-3 font-mono text-xs font-semibold text-[#086288]">
+                      <th scope="row" className="whitespace-nowrap px-3 py-3 font-mono text-xs font-semibold text-[#30483b]">
                         {item.sku}
                       </th>
                       <td className="px-3 py-3 font-medium text-slate-900">{item.productName}</td>

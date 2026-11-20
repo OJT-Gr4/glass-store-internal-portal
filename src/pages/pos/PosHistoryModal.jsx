@@ -186,11 +186,11 @@ export default function PosHistoryModal({
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#004967] text-white flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#253c33] text-white flex items-center justify-center">
               <span className="material-symbols-outlined text-[24px]">receipt_long</span>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#111c2d]">
+              <h2 className="text-lg font-bold text-[#202924]">
                 Lịch Sử Giao Dịch POS
               </h2>
               <p className="text-xs text-slate-500">
@@ -234,7 +234,7 @@ export default function PosHistoryModal({
                 placeholder="Tìm mã đơn, tên khách, số ĐT..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
               />
             </div>
 
@@ -244,7 +244,7 @@ export default function PosHistoryModal({
               <select
                 value={filterBranch}
                 onChange={e => setFilterBranch(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
               >
                 <option value="ALL">Tất cả chi nhánh</option>
                 <option value="BRANCH_01">Chi nhánh 01 (Quận 1)</option>
@@ -260,7 +260,7 @@ export default function PosHistoryModal({
                   type="button"
                   onClick={() => setDateMode('TODAY')}
                   className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-all ${
-                    dateMode === 'TODAY' ? 'bg-white text-[#004967] shadow-xs font-bold' : 'text-slate-600'
+                    dateMode === 'TODAY' ? 'bg-white text-[#253c33] shadow-xs font-bold' : 'text-slate-600'
                   }`}
                 >
                   Hôm nay
@@ -269,7 +269,7 @@ export default function PosHistoryModal({
                   type="button"
                   onClick={() => setDateMode('ALL')}
                   className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-all ${
-                    dateMode === 'ALL' ? 'bg-white text-[#004967] shadow-xs font-bold' : 'text-slate-600'
+                    dateMode === 'ALL' ? 'bg-white text-[#253c33] shadow-xs font-bold' : 'text-slate-600'
                   }`}
                 >
                   Tất cả ngày
@@ -278,7 +278,7 @@ export default function PosHistoryModal({
                   type="button"
                   onClick={() => setDateMode('CUSTOM')}
                   className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-all ${
-                    dateMode === 'CUSTOM' ? 'bg-white text-[#004967] shadow-xs font-bold' : 'text-slate-600'
+                    dateMode === 'CUSTOM' ? 'bg-white text-[#253c33] shadow-xs font-bold' : 'text-slate-600'
                   }`}
                 >
                   Khác...
@@ -300,7 +300,7 @@ export default function PosHistoryModal({
               <select
                 value={filterStaff}
                 onChange={e => setFilterStaff(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
               >
                 <option value="ALL">Tất cả nhân viên</option>
                 {staffList.map(s => (
@@ -315,7 +315,7 @@ export default function PosHistoryModal({
               <select
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#004967]/30"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#253c33]/30"
               >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="PAID">Đã thanh toán (PAID)</option>
@@ -330,7 +330,7 @@ export default function PosHistoryModal({
           {/* Quick stats KPI bar */}
           <div className="flex items-center gap-6 pt-1 text-xs">
             <div className="flex items-center gap-1.5 text-slate-600">
-              <span className="material-symbols-outlined text-[16px] text-[#004967]">shopping_bag</span>
+              <span className="material-symbols-outlined text-[16px] text-[#253c33]">shopping_bag</span>
               <span>Tổng số đơn: <strong className="text-slate-900">{stats.totalCount}</strong></span>
             </div>
             <div className="flex items-center gap-1.5 text-emerald-700">
@@ -363,7 +363,7 @@ export default function PosHistoryModal({
 
           {loading ? (
             <div className="h-64 flex flex-col items-center justify-center gap-3 text-slate-400">
-              <span className="material-symbols-outlined text-[36px] animate-spin text-[#004967]">
+              <span className="material-symbols-outlined text-[36px] animate-spin text-[#253c33]">
                 progress_activity
               </span>
               <span className="text-xs">Đang tải lịch sử đơn hàng từ máy chủ...</span>
@@ -510,7 +510,7 @@ export default function PosHistoryModal({
                               type="button"
                               onClick={() => onSelectReceipt(order)}
                               title="In lại hóa đơn K80"
-                              className="px-2.5 py-1 rounded-lg bg-[#004967] hover:bg-[#003850] text-white text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-[#253c33] hover:bg-[#1d3028] text-white text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
                             >
                               <span className="material-symbols-outlined text-[14px]">
                                 print
@@ -597,7 +597,7 @@ export default function PosHistoryModal({
                 value={cancelReason}
                 onChange={e => setCancelReason(e.target.value)}
                 maxLength={255}
-                className="w-full p-2.5 rounded-xl bg-[#f0f3ff] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/30"
+                className="w-full p-2.5 rounded-xl bg-[#f1f2ec] border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/30"
                 required
               />
             </div>

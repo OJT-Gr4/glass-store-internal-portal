@@ -186,12 +186,12 @@ export default function LabQcPage() {
   ];
 
   return (
-    <div className="w-full min-h-screen bg-[#f9f9ff]">
+    <div className="w-full min-h-screen bg-[#f9f8f4]">
       <div className="max-w-[1600px] mx-auto p-3.5 sm:p-5 flex flex-col gap-3.5">
         {syncError && <Alert type="error" showIcon message={syncError} />}
 
         {/* 1. HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest p-3.5 rounded-xl shadow-xs border border-[#d8e3fb]/40">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container-lowest p-3.5 rounded-xl shadow-xs border border-[#dce2d8]/40">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <span className="font-label-md text-label-md text-outline">XƯỞNG LAB</span>
@@ -226,7 +226,7 @@ export default function LabQcPage() {
 
         {/* 2. 4 QC KPI METRIC CARDS (Dữ liệu đếm động theo trạng thái) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-outline uppercase tracking-wider">Tổng Nghiệm Thu</span>
               <div className="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
@@ -237,12 +237,12 @@ export default function LabQcPage() {
               <span className="font-display-lg text-display-lg text-on-surface font-bold">{totalInspected}</span>
               <span className="font-label-md text-label-md text-outline">cặp</span>
             </div>
-            <div className="mt-1 pt-1.5 border-t border-[#e7eeff] text-body-sm text-[11px] text-outline">
+            <div className="mt-1 pt-1.5 border-t border-[#eceee7] text-body-sm text-[11px] text-outline">
               {qcQueue.length} đơn đang chờ nghiệm thu
             </div>
           </div>
 
-          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-outline uppercase tracking-wider">Đạt Chuẩn (Pass QC)</span>
               <div className="w-7 h-7 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
@@ -253,12 +253,12 @@ export default function LabQcPage() {
               <span className="font-display-lg text-display-lg text-primary font-bold">{passedCount}</span>
               <span className="font-label-md text-label-md text-primary font-semibold">tỷ lệ {passRate}%</span>
             </div>
-            <div className="mt-1 pt-1.5 border-t border-[#e7eeff] text-body-sm text-[11px] text-outline">
+            <div className="mt-1 pt-1.5 border-t border-[#eceee7] text-body-sm text-[11px] text-outline">
               Kết quả kỹ thuật viên đã xác nhận
             </div>
           </div>
 
-          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-error uppercase tracking-wider font-semibold">Lỗi / Mài Lại</span>
               <div className="w-7 h-7 rounded-lg bg-error-container text-error flex items-center justify-center">
@@ -269,12 +269,12 @@ export default function LabQcPage() {
               <span className="font-display-lg text-display-lg text-error font-bold">{failedCount}</span>
               <span className="font-label-md text-label-md text-error">cặp</span>
             </div>
-            <div className="mt-1 pt-1.5 border-t border-[#e7eeff] text-body-sm text-[11px] text-error">
+            <div className="mt-1 pt-1.5 border-t border-[#eceee7] text-body-sm text-[11px] text-error">
               {failedCount > 0 ? 'Đã lập biên bản mài lại phôi' : 'Không có sự cố lệch tâm PD'}
             </div>
           </div>
 
-          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="bg-surface-container-lowest p-3 rounded-xl shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="font-label-md text-label-md text-outline uppercase tracking-wider">Chờ Bàn Giao POS</span>
               <div className="w-7 h-7 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
@@ -285,7 +285,7 @@ export default function LabQcPage() {
               <span className="font-display-lg text-display-lg text-on-secondary-container font-bold">{passedCount}</span>
               <span className="font-label-md text-label-md text-outline">hộp</span>
             </div>
-            <div className="mt-1 pt-1.5 border-t border-[#e7eeff] text-body-sm text-[11px] text-outline">
+            <div className="mt-1 pt-1.5 border-t border-[#eceee7] text-body-sm text-[11px] text-outline">
               {passedCount > 0 ? 'Sẵn sàng giao cho khách tại quầy' : 'Chưa có đơn hoàn thiện bàn giao'}
             </div>
           </div>
@@ -296,7 +296,7 @@ export default function LabQcPage() {
 
           {/* Left Column (4/12): QC Waiting Queue (Chỉ hiện các đơn QC_PENDING) */}
           <div className="col-span-12 xl:col-span-4 flex flex-col gap-2.5">
-            <div className="p-3 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 space-y-2">
+            <div className="p-3 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-title-md text-title-md text-on-surface font-semibold">
                   Khay Chờ Đo Kiểm ({filteredQcQueue.length})
@@ -317,7 +317,7 @@ export default function LabQcPage() {
             {/* Tray List */}
             <div className="flex flex-col gap-2">
               {filteredQcQueue.length === 0 ? (
-                <div className="p-8 text-center bg-surface-container-lowest rounded-xl border border-dashed border-[#d8e3fb]">
+                <div className="p-8 text-center bg-surface-container-lowest rounded-xl border border-dashed border-[#dce2d8]">
                   <span className="material-symbols-outlined text-3xl text-slate-300 mb-1">precision_manufacturing</span>
                   <p className="text-xs text-outline font-medium">
                     {searchQuery ? 'Không tìm thấy khay kính phù hợp' : 'Hiện chưa có kính nào trong hàng đợi chờ QC'}
@@ -336,7 +336,7 @@ export default function LabQcPage() {
                       className={`p-3 rounded-xl transition-all cursor-pointer relative border ${
                         isSelected
                           ? 'bg-surface-container-lowest border-primary/30 shadow-sm ring-1 ring-primary/20'
-                          : 'bg-surface-container-lowest border-[#d8e3fb]/40 hover:border-primary/20 hover:shadow-xs'
+                          : 'bg-surface-container-lowest border-[#dce2d8]/40 hover:border-primary/20 hover:shadow-xs'
                       }`}
                     >
                       {isSelected && <div className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-primary rounded-r"></div>}
@@ -363,7 +363,7 @@ export default function LabQcPage() {
 
           {/* Right Column (8/12): Focal Inspection Station */}
           {!selectedItem ? (
-            <div className="col-span-12 xl:col-span-8 p-12 text-center bg-surface-container-lowest rounded-xl border border-dashed border-[#d8e3fb] flex flex-col items-center justify-center">
+            <div className="col-span-12 xl:col-span-8 p-12 text-center bg-surface-container-lowest rounded-xl border border-dashed border-[#dce2d8] flex flex-col items-center justify-center">
               <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">fact_check</span>
               <h3 className="font-title-md text-on-surface font-semibold">Chưa chọn khay kính cần kiểm tra QC</h3>
               <p className="text-xs text-outline max-w-sm mt-1">
@@ -374,8 +374,8 @@ export default function LabQcPage() {
             <div className="col-span-12 xl:col-span-8 flex flex-col gap-3">
 
               {/* Order Details Header */}
-              <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 space-y-2.5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-[#e7eeff] gap-2">
+              <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-[#eceee7] gap-2">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="px-2.5 py-0.5 rounded-lg bg-primary-container text-on-primary font-label-mono font-bold text-xs">
@@ -398,26 +398,26 @@ export default function LabQcPage() {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-body-sm">
-                  <div className="p-2 rounded-lg bg-surface-container-low border border-[#d8e3fb]/30">
+                  <div className="p-2 rounded-lg bg-surface-container-low border border-[#dce2d8]/30">
                     <span className="text-[10px] text-outline block">KTV Mài Lắp</span>
                     <span className="font-semibold text-on-surface">{selectedItem.tech}</span>
                   </div>
-                  <div className="p-2 rounded-lg bg-surface-container-low border border-[#d8e3fb]/30">
+                  <div className="p-2 rounded-lg bg-surface-container-low border border-[#dce2d8]/30">
                     <span className="text-[10px] text-outline block">Máy Mài 3D</span>
                     <span className="font-semibold text-on-surface">Chưa có thông tin</span>
                   </div>
-                  <div className="p-2 rounded-lg bg-surface-container-low border border-[#d8e3fb]/30">
+                  <div className="p-2 rounded-lg bg-surface-container-low border border-[#dce2d8]/30">
                     <span className="text-[10px] text-outline block">Gọng Kính</span>
                     <span className="font-semibold text-on-surface truncate block">{selectedItem.frame}</span>
                   </div>
-                  <div className="p-2 rounded-lg bg-surface-container-low border border-[#d8e3fb]/30">
+                  <div className="p-2 rounded-lg bg-surface-container-low border border-[#dce2d8]/30">
                     <span className="text-[10px] text-outline block">Tròng Kính</span>
                     <span className="font-semibold text-on-surface truncate block">{selectedItem.lens}</span>
                   </div>
                 </div>
               </div>
 
-              <section className="p-3.5 rounded-xl bg-white border border-[#d8e3fb]/40 space-y-2">
+              <section className="p-3.5 rounded-xl bg-white border border-[#dce2d8]/40 space-y-2">
                 <h3 className="font-semibold">Thông số toa kính</h3>
                 <table className="w-full text-left text-sm">
                   <thead><tr><th>Mắt</th><th>SPH</th><th>CYL</th><th>AXIS</th></tr></thead>
@@ -428,7 +428,7 @@ export default function LabQcPage() {
               </section>
 
               {/* 4-Item Finishing & Packaging Checklist */}
-              <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 space-y-2">
+              <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 space-y-2">
                 <span className="font-title-md text-title-md text-on-surface font-semibold flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-secondary text-[18px]">verified</span>
                   2. Nghiệm Thu Cơ Học &amp; Đóng Gói
@@ -438,7 +438,7 @@ export default function LabQcPage() {
                   <label
                     onClick={() => toggleCheck('optics')}
                     className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
-                      checks.optics ? 'bg-surface-container-lowest border-primary/40 text-on-surface' : 'bg-surface-container-low border-[#d8e3fb]/40 text-outline'
+                      checks.optics ? 'bg-surface-container-lowest border-primary/40 text-on-surface' : 'bg-surface-container-low border-[#dce2d8]/40 text-outline'
                     }`}
                   >
                     <span className={`material-symbols-outlined text-[18px] ${checks.optics ? 'text-primary' : 'text-outline'}`}>
@@ -450,7 +450,7 @@ export default function LabQcPage() {
                   <label
                     onClick={() => toggleCheck('coating')}
                     className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
-                      checks.coating ? 'bg-surface-container-lowest border-primary/40 text-on-surface' : 'bg-surface-container-low border-[#d8e3fb]/40 text-outline'
+                      checks.coating ? 'bg-surface-container-lowest border-primary/40 text-on-surface' : 'bg-surface-container-low border-[#dce2d8]/40 text-outline'
                     }`}
                   >
                     <span className={`material-symbols-outlined text-[18px] ${checks.coating ? 'text-primary' : 'text-outline'}`}>
@@ -462,7 +462,7 @@ export default function LabQcPage() {
                   <label
                     onClick={() => toggleCheck('mechanics')}
                     className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
-                      checks.mechanics ? 'bg-surface-container-lowest border-primary/40 text-on-surface' : 'bg-surface-container-low border-[#d8e3fb]/40 text-outline'
+                      checks.mechanics ? 'bg-surface-container-lowest border-primary/40 text-on-surface' : 'bg-surface-container-low border-[#dce2d8]/40 text-outline'
                     }`}
                   >
                     <span className={`material-symbols-outlined text-[18px] ${checks.mechanics ? 'text-primary' : 'text-outline'}`}>
@@ -474,7 +474,7 @@ export default function LabQcPage() {
                   <label
                     onClick={() => toggleCheck('packaging')}
                     className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
-                      checks.packaging ? 'bg-surface-container-lowest border-primary/40 text-on-surface' : 'bg-surface-container-low border-[#d8e3fb]/40 text-outline'
+                      checks.packaging ? 'bg-surface-container-lowest border-primary/40 text-on-surface' : 'bg-surface-container-low border-[#dce2d8]/40 text-outline'
                     }`}
                   >
                     <span className={`material-symbols-outlined text-[18px] ${checks.packaging ? 'text-primary' : 'text-outline'}`}>
@@ -486,7 +486,7 @@ export default function LabQcPage() {
               </div>
 
               {/* Action Bar */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 gap-3">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 gap-3">
                 <button
                   onClick={() => setIsFailModalOpen(true)}
                   disabled={isSubmitting}
@@ -518,8 +518,8 @@ export default function LabQcPage() {
       {/* MODAL YÊU CẦU MÀI LẠI (RE-EDGE REJECTION MODAL) */}
       {isFailModalOpen && selectedItem && (
         <div className="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest max-w-md w-full rounded-2xl p-5 shadow-2xl border border-[#d8e3fb]/60 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-start justify-between pb-2 border-b border-[#e7eeff]">
+          <div className="bg-surface-container-lowest max-w-md w-full rounded-2xl p-5 shadow-2xl border border-[#dce2d8]/60 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between pb-2 border-b border-[#eceee7]">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="p-1 rounded-lg bg-error-container text-error material-symbols-outlined text-[18px]">replay</span>
@@ -550,7 +550,7 @@ export default function LabQcPage() {
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
                       failReason === reason
                         ? 'bg-error text-white border-error shadow-xs'
-                        : 'bg-surface-container-low text-on-surface border-[#d8e3fb]/50 hover:bg-surface-container'
+                        : 'bg-surface-container-low text-on-surface border-[#dce2d8]/50 hover:bg-surface-container'
                     }`}
                   >
                     {reason}
@@ -567,12 +567,12 @@ export default function LabQcPage() {
                 value={failReason}
                 onChange={(e) => setFailReason(e.target.value)}
                 rows={3}
-                className="w-full p-2.5 rounded-xl bg-surface-container-low text-on-surface text-body-sm border border-[#d8e3fb]/60 focus:bg-surface-container-lowest focus:ring-2 focus:ring-error/20 outline-none transition-all placeholder:text-outline"
+                className="w-full p-2.5 rounded-xl bg-surface-container-low text-on-surface text-body-sm border border-[#dce2d8]/60 focus:bg-surface-container-lowest focus:ring-2 focus:ring-error/20 outline-none transition-all placeholder:text-outline"
                 placeholder="Nhập lý do chi tiết (ví dụ: Tròng phải mài lệch tâm PD 0.8mm, vát rãnh V quá cạn so với gọng kim loại)..."
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e7eeff]">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#eceee7]">
               <button
                 onClick={() => {
                   setIsFailModalOpen(false);

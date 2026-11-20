@@ -32,5 +32,6 @@ export const orderApi = {
   getSepayConfig: () => requestOrder('/api/payments/sepay/configuration'),
   generateVietQr: (orderCode) => requestOrder(`/api/payments/vietqr/generate?orderCode=${encodeURIComponent(orderCode)}`, { method: 'POST' }),
   triggerVietQrTestCallback: (orderCode) => requestOrder(`/api/payments/vietqr/test-callback?orderCode=${encodeURIComponent(orderCode)}`, { method: 'POST' }),
-  getVietQrConfigInfo: () => requestOrder('/api/payments/vietqr/config-info')
+  getVietQrConfigInfo: () => requestOrder('/api/payments/vietqr/config-info'),
+  getAllPayments: () => requestOrder('/api/payments')
 };

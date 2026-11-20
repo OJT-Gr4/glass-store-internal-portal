@@ -51,7 +51,7 @@ export default function OrderShippingLabel({ order, open, onClose }) {
           </span>
           <div style={{ display: 'flex', gap: '8px' }}>
             <Button onClick={onClose}>Đóng</Button>
-            <Button type="primary" className="bg-[#004967]" onClick={print}>
+            <Button type="primary" className="bg-[#253c33]" onClick={print}>
               In Phiếu Giao Hàng A5
             </Button>
           </div>
@@ -66,7 +66,7 @@ export default function OrderShippingLabel({ order, open, onClose }) {
               <h1 className="brand-name">OPTIVISION EYEWEAR</h1>
               <p className="brand-sub">Hệ thống kính mắt chính hãng · Hotline: 1900 6868</p>
               <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>
-                Đơn hàng: <strong style={{ color: '#004967', fontFamily: 'monospace' }}>{order.orderCode || `#${order.id}`}</strong>
+                Đơn hàng: <strong style={{ color: '#253c33', fontFamily: 'monospace' }}>{order.orderCode || `#${order.id}`}</strong>
               </div>
             </div>
             <div style={{ textAlign: 'center' }}>
@@ -123,7 +123,7 @@ export default function OrderShippingLabel({ order, open, onClose }) {
                   <tr key={item.id || idx}>
                     <td style={{ textAlign: 'center', color: '#64748b', fontFamily: 'monospace' }}>{idx + 1}</td>
                     <td style={{ fontWeight: 700 }}>{item.productName}</td>
-                    <td style={{ textAlign: 'center', fontWeight: 800, color: '#004967' }}>{item.quantity ?? 1}</td>
+                    <td style={{ textAlign: 'center', fontWeight: 800, color: '#253c33' }}>{item.quantity ?? 1}</td>
                     <td style={{ fontSize: '10px', color: '#64748b' }}>
                       {item.skuId || item.sku || 'Kính mắt chính hãng'}
                     </td>

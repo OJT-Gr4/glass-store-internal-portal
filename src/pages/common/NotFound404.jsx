@@ -30,7 +30,7 @@ export default function NotFound404() {
             icon={<HomeOutlined />}
             size="large"
             onClick={() => navigate(user ? (user.defaultRoute || '/pos') : '/login')}
-            style={{ background: '#086288', borderRadius: 8, fontWeight: 700 }}
+            style={{ background: '#30483b', borderRadius: 8, fontWeight: 700 }}
           >
             Quay Về Trang Chủ
           </Button>

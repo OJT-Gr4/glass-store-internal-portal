@@ -71,6 +71,8 @@ export default function LoginPage({ onLoginSuccess }) {
   const [staffId, setStaffId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loginErrors, setLoginErrors] = useState({});
+  const [regErrors, setRegErrors] = useState({});
 
   // Handle Role Switch
   const handleRoleChange = (roleKey) => {
@@ -85,13 +87,19 @@ export default function LoginPage({ onLoginSuccess }) {
   // Submit Login
   const handleLoginSubmit = (e) => {
     if (e) e.preventDefault();
+    setLoginErrors({});
 
+    const errors = {};
     if (!staffId.trim()) {
-      message.error('Vui lòng nhập Mã định danh nhân viên (Staff ID)!');
-      return;
+      errors.staffId = 'Vui lòng nhập Mã định danh nhân viên (Staff ID)!';
     }
     if (!password.trim()) {
-      message.error('Vui lòng nhập Mật khẩu tài khoản nội bộ!');
+      errors.password = 'Vui lòng nhập Mật khẩu tài khoản nội bộ!';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setLoginErrors(errors);
+      message.error(Object.values(errors)[0]);
       return;
     }
 
@@ -138,8 +146,19 @@ export default function LoginPage({ onLoginSuccess }) {
   // Handle Register Submit
   const handleRegisterSubmit = (e) => {
     if (e) e.preventDefault();
-    if (!regName.trim() || !regStaffId.trim()) {
-      message.error('Vui lòng nhập đầy đủ họ tên và mã NV đề xuất!');
+    setRegErrors({});
+
+    const errors = {};
+    if (!regName.trim()) {
+      errors.regName = 'Vui lòng nhập họ và tên nhân sự!';
+    }
+    if (!regStaffId.trim()) {
+      errors.regStaffId = 'Vui lòng nhập mã Staff ID đề xuất!';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setRegErrors(errors);
+      message.error(Object.values(errors)[0]);
       return;
     }
     Modal.success({
@@ -147,7 +166,7 @@ export default function LoginPage({ onLoginSuccess }) {
       content: (
         <div>
           <p>Hồ sơ của <strong>{regName}</strong> ({regStaffId}) đã chuyển tới IT Security và Trưởng ca chi nhánh.</p>
-          <p style={{ color: '#086288', fontWeight: 600 }}>Bạn có thể đăng nhập ngay bằng mã demo có sẵn để bắt đầu ca.</p>
+          <p style={{ color: '#30483b', fontWeight: 600 }}>Bạn có thể đăng nhập ngay bằng mã demo có sẵn để bắt đầu ca.</p>
         </div>
       ),
       onOk: () => setMode('login')
@@ -283,7 +302,7 @@ export default function LoginPage({ onLoginSuccess }) {
                 <p className="optivision-form-header-desc">Hệ thống quản lý tác nghiệp chuỗi kính mắt OptiVision</p>
               </div>
 
-              <form onSubmit={handleLoginSubmit}>
+              <form noValidate onSubmit={handleLoginSubmit}>
                 {/* Branch Selection */}
                 <div className="optivision-form-row">
                   <div className="optivision-label-row">
@@ -311,10 +330,21 @@ export default function LoginPage({ onLoginSuccess }) {
                     type="text"
                     className="optivision-form-input"
                     value={staffId}
-                    onChange={(e) => setStaffId(e.target.value)}
+                    onChange={(e) => {
+                      setStaffId(e.target.value);
+                      if (loginErrors.staffId) setLoginErrors(prev => ({ ...prev, staffId: '' }));
+                    }}
                     placeholder="Nhập email, username hoặc mã nhân viên..."
-                    required
+                    style={{
+                      borderColor: loginErrors.staffId ? '#ef4444' : undefined,
+                      backgroundColor: loginErrors.staffId ? '#fef2f2' : undefined
+                    }}
                   />
+                  {loginErrors.staffId && (
+                    <span style={{ color: '#ef4444', fontSize: '11px', marginTop: 4, display: 'block' }}>
+                      {loginErrors.staffId}
+                    </span>
+                  )}
                 </div>
 
                 {/* Password */}
@@ -327,10 +357,16 @@ export default function LoginPage({ onLoginSuccess }) {
                       type={showPassword ? 'text' : 'password'}
                       className="optivision-form-input"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (loginErrors.password) setLoginErrors(prev => ({ ...prev, password: '' }));
+                      }}
                       placeholder="Mật khẩu ca làm việc"
-                      style={{ paddingRight: 36 }}
-                      required
+                      style={{
+                        paddingRight: 36,
+                        borderColor: loginErrors.password ? '#ef4444' : undefined,
+                        backgroundColor: loginErrors.password ? '#fef2f2' : undefined
+                      }}
                     />
                     <button
                       type="button"
@@ -344,6 +380,17 @@ export default function LoginPage({ onLoginSuccess }) {
                         border: 'none',
                         color: '#64748b',
                         cursor: 'pointer'
+                      }}
+                    >
+                      {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                    </button>
+                  </div>
+                  {loginErrors.password && (
+                    <span style={{ color: '#ef4444', fontSize: '11px', marginTop: 4, display: 'block' }}>
+                      {loginErrors.password}
+                    </span>
+                  )}
+                </div>
                       }}
                     >
                       {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
@@ -401,33 +448,55 @@ export default function LoginPage({ onLoginSuccess }) {
                 <p className="optivision-form-header-desc">Đăng ký tài khoản tác nghiệp chuỗi kính mắt OptiVision</p>
               </div>
 
-              <form onSubmit={handleRegisterSubmit}>
+              <form noValidate onSubmit={handleRegisterSubmit}>
                 <div className="optivision-form-row">
                   <div className="optivision-label-row">
-                    <span>Họ và tên nhân sự</span>
+                    <span>Họ và tên nhân sự <span style={{ color: '#ef4444' }}>*</span></span>
                   </div>
                   <input
                     type="text"
                     className="optivision-form-input"
                     value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
+                    onChange={(e) => {
+                      setRegName(e.target.value);
+                      if (regErrors.regName) setRegErrors(prev => ({ ...prev, regName: '' }));
+                    }}
                     placeholder="VD: Trần Văn Kỹ Thuật"
-                    required
+                    style={{
+                      borderColor: regErrors.regName ? '#ef4444' : undefined,
+                      backgroundColor: regErrors.regName ? '#fef2f2' : undefined
+                    }}
                   />
+                  {regErrors.regName && (
+                    <span style={{ color: '#ef4444', fontSize: '11px', marginTop: 4, display: 'block' }}>
+                      {regErrors.regName}
+                    </span>
+                  )}
                 </div>
 
                 <div className="optivision-form-row">
                   <div className="optivision-label-row">
-                    <span>Mã Staff ID đề xuất</span>
+                    <span>Mã Staff ID đề xuất <span style={{ color: '#ef4444' }}>*</span></span>
                   </div>
                   <input
                     type="text"
                     className="optivision-form-input"
                     value={regStaffId}
-                    onChange={(e) => setRegStaffId(e.target.value)}
+                    onChange={(e) => {
+                      setRegStaffId(e.target.value);
+                      if (regErrors.regStaffId) setRegErrors(prev => ({ ...prev, regStaffId: '' }));
+                    }}
                     placeholder="NV-OPT-XXXXXX"
-                    required
+                    style={{
+                      borderColor: regErrors.regStaffId ? '#ef4444' : undefined,
+                      backgroundColor: regErrors.regStaffId ? '#fef2f2' : undefined
+                    }}
                   />
+                  {regErrors.regStaffId && (
+                    <span style={{ color: '#ef4444', fontSize: '11px', marginTop: 4, display: 'block' }}>
+                      {regErrors.regStaffId}
+                    </span>
+                  )}
                 </div>
 
                 <div className="optivision-form-row">

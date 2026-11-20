@@ -45,7 +45,7 @@ import {
   UploadOutlined
 } from '@ant-design/icons';
 import { catalogManagementApi } from '../../api/catalogManagementApi';
-import { compressImageToDataUrl, DEFAULT_PRODUCT_IMAGE, isValidImageInput } from '../../utils/imageUploadUtils';
+import { uploadImageFile, compressImageToDataUrl, DEFAULT_PRODUCT_IMAGE, isValidImageInput } from '../../utils/imageUploadUtils';
 
 const { Text, Title } = Typography;
 
@@ -102,12 +102,15 @@ export default function CatalogManagementPage() {
   const handleImageFileSelect = async (e, targetForm, fieldName) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const hideLoading = message.loading('Đang tải ảnh lên Cloudinary...', 0);
     try {
-      const compressed = await compressImageToDataUrl(file, 640, 0.85);
-      targetForm.setFieldsValue({ [fieldName]: compressed });
+      const uploadedUrl = await uploadImageFile(file, 800);
+      targetForm.setFieldsValue({ [fieldName]: uploadedUrl });
+      message.success('Đã tải ảnh lên Cloudinary thành công!');
     } catch (err) {
-      message.error(err.message || 'Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP, GIF).');
+      message.error(err.message || 'Không thể tải ảnh.');
     } finally {
+      hideLoading();
       e.target.value = '';
     }
   };
@@ -407,7 +410,7 @@ export default function CatalogManagementPage() {
       key: 'skuBarcode',
       render: (_, v) => (
         <Space direction="vertical" size={2}>
-          <Text strong copyable className="text-[#086288]">{v.sku}</Text>
+          <Text strong copyable className="text-[#30483b]">{v.sku}</Text>
           <Text type="secondary" className="text-xs">Barcode: {v.barcode || '—'}</Text>
         </Space>
       )
@@ -626,7 +629,7 @@ export default function CatalogManagementPage() {
             <Badge
               count={p.variants?.length || 0}
               showZero
-              style={{ backgroundColor: '#086288' }}
+              style={{ backgroundColor: '#30483b' }}
             />
           )
         },
@@ -707,22 +710,22 @@ export default function CatalogManagementPage() {
   const records = data[activeTab] || [];
 
   return (
-    <main className="min-h-screen w-full bg-[#f9f9ff]">
+    <main className="min-h-screen w-full bg-[#f9f8f4]">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-4 sm:p-6">
-        <header className="flex flex-col justify-between gap-4 rounded-xl border border-[#d8e3fb]/50 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+        <header className="flex flex-col justify-between gap-4 rounded-xl border border-[#dce2d8]/50 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#086288]">Quản trị hệ thống (Catalog Admin)</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#30483b]">Quản trị hệ thống (Catalog Admin)</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">Sản phẩm, biến thể, giá và danh mục</h1>
             <p className="mt-1 text-sm text-slate-600">
               Quản trị toàn diện danh mục hàng hoá. Giá thay đổi qua server, ẩn/ngừng sản phẩm bảo toàn lịch sử đơn.
             </p>
           </div>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} className="bg-[#086288]">
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate} className="bg-[#30483b]">
             Thêm {currentConfig.singular}
           </Button>
         </header>
 
-        <section className="rounded-xl border border-[#d8e3fb]/50 bg-white p-4 shadow-sm sm:p-5">
+        <section className="rounded-xl border border-[#dce2d8]/50 bg-white p-4 shadow-sm sm:p-5">
           {loadError && (
             <Alert
               className="mb-4"
@@ -815,7 +818,7 @@ export default function CatalogManagementPage() {
                         type="primary"
                         icon={<PlusOutlined />}
                         onClick={() => openAddVariant(record)}
-                        className="bg-[#086288]"
+                        className="bg-[#30483b]"
                       >
                         Thêm biến thể
                       </Button>
@@ -959,7 +962,7 @@ export default function CatalogManagementPage() {
                     <Input
                       placeholder="https://images.unsplash.com/... hoặc chọn tệp"
                       suffix={
-                        <label className="cursor-pointer text-[#086288] hover:text-[#004967] text-xs font-semibold flex items-center gap-1 m-0">
+                        <label className="cursor-pointer text-[#30483b] hover:text-[#253c33] text-xs font-semibold flex items-center gap-1 m-0">
                           <UploadOutlined /> Tải ảnh
                           <input
                             type="file"
@@ -976,7 +979,7 @@ export default function CatalogManagementPage() {
                     {SAMPLE_IMAGE_PRESETS.slice(0, 4).map((p) => (
                       <Tag
                         key={p.label}
-                        className="cursor-pointer hover:border-[#086288] hover:text-[#086288]"
+                        className="cursor-pointer hover:border-[#30483b] hover:text-[#30483b]"
                         onClick={() => form.setFieldsValue({ initialImageUrl: p.url })}
                       >
                         {p.label}
@@ -1285,7 +1288,7 @@ export default function CatalogManagementPage() {
                 <Input
                   placeholder="https://images.unsplash.com/... hoặc chọn tệp"
                   suffix={
-                    <label className="cursor-pointer text-[#086288] hover:text-[#004967] text-xs font-semibold flex items-center gap-1 m-0">
+                    <label className="cursor-pointer text-[#30483b] hover:text-[#253c33] text-xs font-semibold flex items-center gap-1 m-0">
                       <UploadOutlined /> Tải ảnh
                       <input
                         type="file"
@@ -1302,7 +1305,7 @@ export default function CatalogManagementPage() {
                 {SAMPLE_IMAGE_PRESETS.map((p) => (
                   <Tag
                     key={p.label}
-                    className="cursor-pointer hover:border-[#086288] hover:text-[#086288]"
+                    className="cursor-pointer hover:border-[#30483b] hover:text-[#30483b]"
                     onClick={() => variantForm.setFieldsValue({ imageUrl: p.url })}
                   >
                     {p.label}
