@@ -46,7 +46,8 @@ test('applySingleMarkRead marks item read and decrements unreadCount once', () =
   assert.equal(afterRepeat.unreadCount, 1);
 });
 
-test('categoryMeta returns labels for LAB_READY and APPOINTMENT', () => {
+test('categoryMeta returns labels for LAB_READY, APPOINTMENT, and WARRANTY', () => {
   assert.equal(categoryMeta('LAB_READY').color, 'green');
   assert.equal(categoryMeta('APPOINTMENT').color, 'blue');
+  assert.equal(categoryMeta('WARRANTY').color, 'purple');
 });

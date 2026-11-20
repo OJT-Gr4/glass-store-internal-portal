@@ -5,7 +5,7 @@ import { ROLES } from '../../routes/rolesConfig';
 import { Drawer, Empty, Modal, Spin, Tag, message } from 'antd';
 import { catalogManagementApi } from '../../api/catalogManagementApi';
 import { notificationApi } from '../../api/notificationApi';
-import { compressImageToDataUrl, DEFAULT_AVATAR_URL, isValidImageInput } from '../../utils/imageUploadUtils';
+import { uploadImageFile, compressImageToDataUrl, DEFAULT_AVATAR_URL, isValidImageInput } from '../../utils/imageUploadUtils';
 import {
   applySingleMarkRead,
   categoryMeta,
@@ -159,7 +159,7 @@ export default function MainLayout() {
         const locs = response.data;
         setLocations(locs);
         setSelectedBranch((current) => {
-          if (current && locs.some((l) => l.code === current)) return current;
+          if (user?.branchCode) return user.branchCode;
           const userBranch = locs.find(
             (l) =>
               l.code === user?.branch ||
@@ -212,6 +212,12 @@ export default function MainLayout() {
           label: 'Quản Lý Đơn Hàng OMS',
           icon: 'receipt_long',
           allowedRoles: [ROLES.ADMIN, ROLES.POS]
+        },
+        {
+          key: '/reconciliation',
+          label: 'Đối Soát Thanh Toán',
+          icon: 'account_balance_wallet',
+          allowedRoles: [ROLES.ADMIN, ROLES.POS]
         }
       ]
     },
@@ -235,13 +241,13 @@ export default function MainLayout() {
     },
     {
       title: 'LAB GIA CÔNG',
-      allowedRoles: [ROLES.ADMIN, ROLES.LAB],
+      allowedRoles: [ROLES.ADMIN, ROLES.LAB, ROLES.OPTOMETRY],
       items: [
         {
           key: '/lab',
           label: 'Điều phối mài lắp kính',
           icon: 'precision_manufacturing',
-          allowedRoles: [ROLES.ADMIN, ROLES.LAB]
+          allowedRoles: [ROLES.ADMIN, ROLES.LAB, ROLES.OPTOMETRY]
         },
         {
           key: '/lab-qc',
@@ -295,7 +301,7 @@ export default function MainLayout() {
     },
     {
       title: 'QUẢN TRỊ & BÁO CÁO',
-      allowedRoles: [ROLES.ADMIN],
+      allowedRoles: [ROLES.ADMIN, ROLES.POS],
       items: [
         {
           key: '/reports',
@@ -319,7 +325,7 @@ export default function MainLayout() {
           key: '/vouchers',
           label: 'Quản lý Voucher & Khuyến mãi',
           icon: 'local_activity',
-          allowedRoles: [ROLES.ADMIN]
+          allowedRoles: [ROLES.ADMIN, ROLES.POS]
         }
       ]
     }
@@ -339,20 +345,20 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="bg-[#f9f9ff] font-sans text-[#111c2d] min-h-screen flex selection:bg-[#c6e7ff]">
+    <div className="bg-[#f9f8f4] font-sans text-[#202924] min-h-screen flex selection:bg-[#dce5d9]">
       {/* ---------------- 1. FIXED LEFT SIDEBAR ---------------- */}
-      <aside className="fixed left-0 top-0 h-full w-72 bg-[#f0f3ff] z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-r border-[#d8e3fb]/50">
+      <aside className="fixed left-0 top-0 h-full w-72 bg-[#f1f2ec] z-50 flex flex-col shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-r border-[#dce2d8]/50">
         {/* Brand Header */}
         <div
-          className="h-16 px-6 flex items-center gap-3 bg-[#f0f3ff] border-b border-[#e7eeff] cursor-pointer select-none"
+          className="h-16 px-6 flex items-center gap-3 bg-[#f1f2ec] border-b border-[#eceee7] cursor-pointer select-none"
           onClick={() => navigate('/dashboard')}
         >
-          <div className="w-9 h-9 rounded-xl bg-[#086288] flex items-center justify-center text-white shadow-sm">
-            <span className="material-symbols-outlined text-[#cae6ff] text-[20px]">eyeglasses</span>
+          <div className="w-9 h-9 rounded-xl bg-[#30483b] flex items-center justify-center text-white shadow-sm">
+            <span className="material-symbols-outlined text-[#dce5d9] text-[20px]">eyeglasses</span>
           </div>
           <div>
-            <span className="text-lg text-[#004967] font-bold block leading-tight">OptiVision</span>
-            <span className="text-[10px] text-[#19648f] tracking-widest uppercase block font-bold">
+            <span className="text-lg text-[#253c33] font-bold block leading-tight">GlassStore</span>
+            <span className="text-[10px] text-[#526d5c] tracking-widest uppercase block font-bold">
               Clinical &amp; Retail
             </span>
           </div>
@@ -377,8 +383,8 @@ export default function MainLayout() {
                       onClick={() => handleNavClick(item.key)}
                       className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-left transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-[#086288] text-white font-bold shadow-sm'
-                          : 'text-[#40484e] hover:bg-[#dee8ff] hover:text-[#111c2d]'
+                          ? 'bg-[#30483b] text-white font-bold shadow-sm'
+                          : 'text-[#40484e] hover:bg-[#e4e4db] hover:text-[#202924]'
                       }`}
                     >
                       <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
@@ -392,7 +398,7 @@ export default function MainLayout() {
         </div>
 
         {/* Sidebar Footer User Info & Logout */}
-        <div className="p-3 border-t border-[#e7eeff] bg-[#e7eeff]/60 flex items-center justify-between gap-2">
+        <div className="p-3 border-t border-[#eceee7] bg-[#eceee7]/60 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => {
@@ -404,18 +410,18 @@ export default function MainLayout() {
           >
             <img
               src={user?.avatarUrl || DEFAULT_AVATAR_URL}
-              alt={user?.staffName || 'Nhân sự OptiVision'}
+              alt={user?.staffName || 'Nhân sự GlassStore'}
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = DEFAULT_AVATAR_URL;
               }}
-              className="w-8 h-8 rounded-full object-cover ring-1 ring-[#cde5f5] bg-white flex-shrink-0"
+              className="w-8 h-8 rounded-full object-cover ring-1 ring-[#dce5d9] bg-white flex-shrink-0"
             />
             <div className="overflow-hidden leading-tight">
-              <div className="text-xs font-bold text-[#111c2d] truncate">
-                {user?.staffName || 'Nhân sự OptiVision'}
+              <div className="text-xs font-bold text-[#202924] truncate">
+                {user?.staffName || 'Nhân sự GlassStore'}
               </div>
-              <div className="text-[10px] text-[#086288] font-semibold truncate">
+              <div className="text-[10px] text-[#30483b] font-semibold truncate">
                 {user?.roleLabel || 'Nhân viên'} · Đổi avatar
               </div>
             </div>
@@ -432,26 +438,27 @@ export default function MainLayout() {
       </aside>
 
       {/* ---------------- 2. MAIN CONTAINER (PL-72) ---------------- */}
-      <div className="pl-72 flex-1 flex flex-col min-h-screen">
+      <div className="pl-72 flex-1 min-w-0 flex flex-col min-h-screen">
         {/* Top Header */}
-        <header className="fixed top-0 left-72 right-0 h-16 bg-[#f9f9ff]/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-6 sm:px-8 flex items-center justify-between gap-4 border-b border-[#e7eeff]">
+        <header className="fixed top-0 left-72 right-0 h-16 bg-[#f9f8f4]/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-6 sm:px-8 flex items-center justify-between gap-4 border-b border-[#eceee7]">
           {/* Branch Selector */}
           <div className="flex items-center gap-3">
             <div className="relative">
               <select
                 value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value)}
-                disabled={locationsLoading || locations.length === 0}
-                aria-label="Chọn địa điểm"
-                className="appearance-none bg-[#e7eeff] hover:bg-[#dee8ff] text-[#111c2d] text-xs font-bold pl-8 pr-7 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#086288] cursor-pointer transition-colors"
+                disabled
+                title="Chi nhánh đã khóa theo phiên. Đăng xuất và đăng nhập lại để đổi."
+                aria-label="Chi nhánh làm việc đã khóa theo phiên đăng nhập"
+                className="appearance-none bg-[#eceee7] hover:bg-[#e4e4db] text-[#202924] text-xs font-bold pl-8 pr-7 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#30483b] cursor-pointer transition-colors"
               >
+                {selectedBranch && !locations.some(item => item.code === selectedBranch) && <option value={selectedBranch}>{user?.branchName || selectedBranch}</option>}
                 {locations.map((location) => (
                   <option key={location.code} value={location.code}>
                     {location.name}
                   </option>
                 ))}
               </select>
-              <span className="material-symbols-outlined absolute left-2.5 top-2 text-[#004967] text-[18px] pointer-events-none">
+              <span className="material-symbols-outlined absolute left-2.5 top-2 text-[#253c33] text-[18px] pointer-events-none">
                 store
               </span>
               <span className="material-symbols-outlined absolute right-2 top-2.5 text-[#40484e] text-[16px] pointer-events-none">
@@ -467,7 +474,7 @@ export default function MainLayout() {
               <button
                 type="button"
                 onClick={() => navigate('/pos')}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#086288] hover:bg-[#004967] text-white text-xs font-bold shadow-[0_4px_14px_rgba(8,98,136,0.2)] transition-all active:scale-[0.98] cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#30483b] hover:bg-[#253c33] text-white text-xs font-bold shadow-[0_4px_14px_rgba(8,98,136,0.2)] transition-all active:scale-[0.98] cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">add_circle</span>
                 <span>Tạo đơn POS nhanh</span>
@@ -504,7 +511,7 @@ export default function MainLayout() {
               data-testid="portal-notification-bell"
               aria-label="Thông báo giao dịch"
               onClick={handleOpenNotifications}
-              className="relative p-2 rounded-xl text-[#40484e] hover:bg-[#e7eeff] hover:text-[#111c2d] transition-colors cursor-pointer"
+              className="relative p-2 rounded-xl text-[#40484e] hover:bg-[#eceee7] hover:text-[#202924] transition-colors cursor-pointer"
             >
               <span className="material-symbols-outlined text-[22px]">notifications</span>
               {unreadCount > 0 && (
@@ -517,22 +524,22 @@ export default function MainLayout() {
               )}
             </button>
 
-            <div className="h-6 w-px bg-[#dee8ff]" />
+            <div className="h-6 w-px bg-[#e4e4db]" />
 
             {/* User Profile Dropdown Menu */}
             <div className="relative">
               <div
-                className="flex items-center gap-2.5 cursor-pointer select-none p-1 rounded-xl hover:bg-[#f0f3ff] transition-colors"
+                className="flex items-center gap-2.5 cursor-pointer select-none p-1 rounded-xl hover:bg-[#f1f2ec] transition-colors"
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               >
-                <div className="w-8 h-8 rounded-full bg-[#004967] text-white flex items-center justify-center shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-[#253c33] text-white flex items-center justify-center shadow-sm">
                   <span className="material-symbols-outlined text-[18px]">person</span>
                 </div>
                 <div className="flex flex-col text-left">
-                  <span className="text-xs text-[#111c2d] font-bold leading-tight">
-                    {user?.staffName || 'Nhân sự OptiVision'}
+                  <span className="text-xs text-[#202924] font-bold leading-tight">
+                    {user?.staffName || 'Nhân sự GlassStore'}
                   </span>
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#8fcdfd]/30 text-[#005881] text-[10px] font-bold w-fit leading-tight mt-0.5">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#c7d8c7]/30 text-[#30483b] text-[10px] font-bold w-fit leading-tight mt-0.5">
                     {user?.roleLabel || 'Nhân viên'}
                   </span>
                 </div>
@@ -547,9 +554,9 @@ export default function MainLayout() {
                   <div className="fixed inset-0 z-40" onClick={() => setIsUserMenuOpen(false)} />
                   <div className="absolute right-0 top-12 mt-1 w-64 bg-white rounded-xl shadow-lg border border-slate-100 z-50 p-2 text-xs">
                     <div className="p-2 border-b border-slate-100 mb-1">
-                      <div className="font-bold text-[#111c2d]">{user?.staffName || 'Nhân sự'}</div>
+                      <div className="font-bold text-[#202924]">{user?.staffName || 'Nhân sự'}</div>
                       <div className="text-[11px] text-[#70787f]">{user?.email || 'nhansu@optivision.vn'}</div>
-                      <div className="text-[10px] font-mono text-[#004967] mt-0.5">
+                      <div className="text-[10px] font-mono text-[#253c33] mt-0.5">
                         Mã định danh: {user?.employeeCode || 'NV-OPT-2026'}
                       </div>
                     </div>
@@ -574,7 +581,7 @@ export default function MainLayout() {
 
         {/* Content Outlet */}
         <div className="pt-16 flex-1 flex flex-col">
-          <Outlet context={{ selectedBranch, locations, setSelectedBranch }} />
+          <Outlet context={{ selectedBranch, locations }} />
         </div>
       </div>
 
@@ -583,7 +590,7 @@ export default function MainLayout() {
         title={
           <div className="flex items-center justify-between gap-2">
             <div>
-              <div className="text-sm font-bold text-[#004967]">Hộp Thư Thông Báo Giao Dịch</div>
+              <div className="text-sm font-bold text-[#253c33]">Hộp Thư Thông Báo Giao Dịch</div>
               <div className="text-[11px] text-[#70787f] font-normal">
                 Chủ sở hữu: {user?.staffName} · Polling {Math.round(pollIntervalMs / 1000)}s · Chưa đọc: {unreadCount}
               </div>
@@ -605,7 +612,7 @@ export default function MainLayout() {
                   loadInbox(false);
                 }}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer ${
-                  !filterUnreadOnly ? 'bg-[#086288] text-white' : 'bg-slate-100 text-slate-600'
+                  !filterUnreadOnly ? 'bg-[#30483b] text-white' : 'bg-slate-100 text-slate-600'
                 }`}
               >
                 Tất cả
@@ -617,7 +624,7 @@ export default function MainLayout() {
                   loadInbox(true);
                 }}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer ${
-                  filterUnreadOnly ? 'bg-[#086288] text-white' : 'bg-slate-100 text-slate-600'
+                  filterUnreadOnly ? 'bg-[#30483b] text-white' : 'bg-slate-100 text-slate-600'
                 }`}
               >
                 Chưa đọc ({unreadCount})
@@ -636,7 +643,7 @@ export default function MainLayout() {
                 type="button"
                 disabled={markingAllRead || unreadCount === 0}
                 onClick={handleMarkAllAsRead}
-                className="px-2.5 py-1 rounded-lg bg-[#e7eeff] text-[#004967] text-xs font-bold hover:bg-[#dee8ff] disabled:opacity-50 cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-[#eceee7] text-[#253c33] text-xs font-bold hover:bg-[#e4e4db] disabled:opacity-50 cursor-pointer"
               >
                 Đánh dấu tất cả đã đọc
               </button>
@@ -644,7 +651,7 @@ export default function MainLayout() {
           </div>
 
           {currentRole === ROLES.ADMIN && (
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#f0f3ff] border border-[#d8e3fb] text-[11px]">
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#f1f2ec] border border-[#dce2d8] text-[11px]">
               <span className="text-[#40484e]">Quản trị kênh &amp; cổng SMS/Email:</span>
               <button
                 type="button"
@@ -652,7 +659,7 @@ export default function MainLayout() {
                   setNotificationDrawerOpen(false);
                   navigate('/settings?tab=notifications');
                 }}
-                className="font-bold text-[#004967] hover:underline cursor-pointer"
+                className="font-bold text-[#253c33] hover:underline cursor-pointer"
               >
                 Mở cấu hình kênh thông báo →
               </button>
@@ -687,14 +694,14 @@ export default function MainLayout() {
                     className={`p-3 rounded-xl border transition-all ${
                       item.read
                         ? 'bg-white border-slate-200'
-                        : 'bg-[#f0f7ff] border-[#086288] shadow-xs'
+                        : 'bg-[#f2f5ef] border-[#30483b] shadow-xs'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <Tag color={cat.color} className="!text-[10px] !m-0">{cat.label}</Tag>
                         {item.referenceCode && (
-                          <span className="text-[10px] font-mono font-bold text-[#004967] bg-[#e7eeff] px-1.5 py-0.5 rounded">
+                          <span className="text-[10px] font-mono font-bold text-[#253c33] bg-[#eceee7] px-1.5 py-0.5 rounded">
                             {item.referenceCode}
                           </span>
                         )}
@@ -706,7 +713,7 @@ export default function MainLayout() {
                       </div>
                     </div>
 
-                    <div className="text-xs font-bold text-[#111c2d] mt-1.5">{item.title}</div>
+                    <div className="text-xs font-bold text-[#202924] mt-1.5">{item.title}</div>
                     <p className="text-xs text-[#40484e] mt-1 mb-2 leading-relaxed">{item.message}</p>
 
                     <div className="flex items-center justify-between gap-2 flex-wrap text-[10px] text-[#70787f]">
@@ -720,7 +727,7 @@ export default function MainLayout() {
                           <button
                             type="button"
                             onClick={() => handleMarkAsRead(item)}
-                            className="px-2 py-1 rounded-md bg-white border border-[#086288] text-[#086288] hover:bg-[#e7eeff] text-[11px] font-semibold cursor-pointer"
+                            className="px-2 py-1 rounded-md bg-white border border-[#30483b] text-[#30483b] hover:bg-[#eceee7] text-[11px] font-semibold cursor-pointer"
                           >
                             Đánh dấu đã đọc
                           </button>
@@ -729,7 +736,7 @@ export default function MainLayout() {
                           <button
                             type="button"
                             onClick={() => handleOpenNotificationTarget(item)}
-                            className="px-2 py-1 rounded-md bg-[#086288] text-white hover:bg-[#004967] text-[11px] font-semibold cursor-pointer"
+                            className="px-2 py-1 rounded-md bg-[#30483b] text-white hover:bg-[#253c33] text-[11px] font-semibold cursor-pointer"
                           >
                             Mở màn hình
                           </button>
@@ -770,7 +777,7 @@ export default function MainLayout() {
         }}
       >
         <div className="space-y-4 pt-2">
-          <div className="flex items-center gap-4 p-3 rounded-xl bg-[#f0f3ff] border border-[#dee8ff]">
+          <div className="flex items-center gap-4 p-3 rounded-xl bg-[#f1f2ec] border border-[#e4e4db]">
             <img
               src={avatarDraft || DEFAULT_AVATAR_URL}
               alt="Xem trước avatar"
@@ -778,15 +785,15 @@ export default function MainLayout() {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = DEFAULT_AVATAR_URL;
               }}
-              className="w-16 h-16 rounded-full object-cover ring-2 ring-[#086288] bg-white shrink-0"
+              className="w-16 h-16 rounded-full object-cover ring-2 ring-[#30483b] bg-white shrink-0"
             />
             <div className="text-xs space-y-1">
-              <div className="font-bold text-[#111c2d]">{user?.staffName || 'Nhân sự'}</div>
-              <div className="text-[#086288] font-semibold">{user?.roleLabel}</div>
+              <div className="font-bold text-[#202924]">{user?.staffName || 'Nhân sự'}</div>
+              <div className="text-[#30483b] font-semibold">{user?.roleLabel}</div>
               <button
                 type="button"
                 onClick={() => setAvatarDraft(DEFAULT_AVATAR_URL)}
-                className="text-[11px] text-[#086288] underline cursor-pointer"
+                className="text-[11px] text-[#30483b] underline cursor-pointer"
               >
                 Khôi phục ảnh mặc định
               </button>
@@ -801,9 +808,9 @@ export default function MainLayout() {
                 value={avatarDraft.startsWith('data:image/') ? '' : avatarDraft}
                 onChange={(e) => setAvatarDraft(e.target.value)}
                 placeholder={avatarDraft.startsWith('data:image/') ? 'Đã chọn ảnh từ máy (hoặc nhập link mới)' : 'https://...'}
-                className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#086288]"
+                className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:border-[#30483b]"
               />
-              <label className="px-3 py-2 rounded-lg bg-[#e7eeff] hover:bg-[#dee8ff] text-[#004967] text-xs font-bold cursor-pointer shrink-0">
+              <label className="px-3 py-2 rounded-lg bg-[#eceee7] hover:bg-[#e4e4db] text-[#253c33] text-xs font-bold cursor-pointer shrink-0">
                 Tải ảnh
                 <input
                   type="file"
@@ -812,12 +819,15 @@ export default function MainLayout() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
+                    const hide = message.loading('Đang tải ảnh đại diện lên Cloudinary...', 0);
                     try {
-                      const compressed = await compressImageToDataUrl(file, 256, 0.85);
-                      setAvatarDraft(compressed);
+                      const url = await uploadImageFile(file, 256);
+                      setAvatarDraft(url);
+                      message.success('Đã tải ảnh lên Cloudinary!');
                     } catch (err) {
-                      message.error(err.message);
+                      message.error(err.message || 'Không thể tải ảnh.');
                     } finally {
+                      hide();
                       e.target.value = '';
                     }
                   }}

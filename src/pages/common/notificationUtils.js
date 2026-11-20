@@ -29,6 +29,8 @@ export function categoryMeta(category) {
       return { label: 'Lịch hẹn đo mắt', color: 'blue', icon: 'calendar_month' };
     case 'ORDER':
       return { label: 'Đơn hàng OMS / POS', color: 'cyan', icon: 'receipt_long' };
+    case 'WARRANTY':
+      return { label: 'Bảo hành & Hậu mãi', color: 'purple', icon: 'verified_user' };
     default:
       return { label: clean || 'Hệ thống', color: 'default', icon: 'notifications' };
   }

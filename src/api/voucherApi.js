@@ -6,6 +6,9 @@ const requestVoucher = async (path, options) => {
 };
 
 export const voucherApi = {
+  getGrants: id => requestVoucher(`/api/vouchers/${id}/grants`),
+  issue: (id, customerIds) => requestVoucher(`/api/vouchers/${id}/grants`, { method: 'POST', body: JSON.stringify({ customerIds }) }),
+  revoke: (id, customerId) => requestVoucher(`/api/vouchers/${id}/grants/${customerId}`, { method: 'DELETE' }),
   getAllVouchers: () => requestVoucher('/api/vouchers'),
   getVoucherByCode: (code) => requestVoucher(`/api/vouchers/${encodeURIComponent(code)}`),
   createVoucher: (data) => requestVoucher('/api/vouchers', {

@@ -24,6 +24,7 @@ import ReportsPage from './pages/admin/ReportsPage';
 import StaffRbacPage from './pages/admin/StaffRbacPage';
 import CatalogManagementPage from './pages/admin/CatalogManagementPage';
 import VoucherManagementPage from './pages/admin/VoucherManagementPage';
+import PaymentReconciliationPage from './pages/finance/PaymentReconciliationPage';
 import NotFound404 from './pages/common/NotFound404';
 
 // Component to handle root redirection based on user's auth status and role
@@ -40,9 +41,9 @@ export default function App() {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#086288',
-          colorLink: '#4D8DBA',
-          colorSuccess: '#086288',
+          colorPrimary: '#30483b',
+          colorLink: '#30483b',
+          colorSuccess: '#397a50',
           borderRadius: 8,
           fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif"
         }
@@ -99,6 +100,14 @@ export default function App() {
                   </RoleGuard>
                 }
               />
+              <Route
+                path="/reconciliation"
+                element={
+                  <RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.POS]}>
+                    <PaymentReconciliationPage />
+                  </RoleGuard>
+                }
+              />
 
               {/* 3. KHÚC XẠ & LÂM SÀNG */}
               <Route
@@ -122,7 +131,7 @@ export default function App() {
               <Route
                 path="/lab"
                 element={
-                  <RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.LAB]}>
+                  <RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.LAB, ROLES.OPTOMETRY]}>
                     <LabPage />
                   </RoleGuard>
                 }
@@ -208,7 +217,7 @@ export default function App() {
               <Route
                 path="/vouchers"
                 element={
-                  <RoleGuard allowedRoles={[ROLES.ADMIN]}>
+                  <RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.POS]}>
                     <VoucherManagementPage />
                   </RoleGuard>
                 }

@@ -11,7 +11,8 @@ test('reception preserves actual conditions and adds the current employee and lo
 test('missing actor, purchase identity or unsupported service cannot create a receipt',()=>{
   assert.throws(()=>repairPayload(valid(),''),/nhân viên/);
   assert.throws(()=>repairPayload({...valid(),orderId:null},'QA'),/đơn hàng/);
-  assert.throws(()=>repairPayload({...valid(),customerId:null},'QA'),/khách hàng/);
+  assert.equal(repairPayload({...valid(),customerId:null},'QA').customerId,null);
+  assert.throws(()=>repairPayload({...valid(),customerId:'CUS-42'},'QA'),/không hợp lệ/);
   assert.throws(()=>repairPayload({...valid(),requestedServices:['FAKE_SERVICE']},'QA'),/dịch vụ/);
   assert.throws(()=>repairPayload({...valid(),expectedPickupAt:'2000-01-01T10:00'},'QA'),/Giờ hẹn/);
 });

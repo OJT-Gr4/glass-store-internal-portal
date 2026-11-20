@@ -32,7 +32,7 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
       {offerError && <p role="alert" className="pos-offer-error">{offerError}</p>}
       {offerPending && !offerError && <p role="status" className="pos-offer-error">Đang kiểm tra giá và ưu đãi…</p>}
       </div>
-      <dl className="pos-totals"><div><dt>Tạm tính</dt><dd>{money(subtotal)}</dd></div>{Number(offer?.voucherDiscount)>0 && <div><dt>Voucher {offer.voucherCode}</dt><dd>−{money(offer.voucherDiscount)}</dd></div>}{Number(offer?.pointsDiscount)>0 && <div><dt>Dùng {offer.redeemedPoints} điểm</dt><dd>−{money(offer.pointsDiscount)}</dd></div>}<div><dt>Tiền tính thuế</dt><dd>{money(offer?.taxableAmount ?? Math.max(0, subtotal - discount))}</dd></div><div><dt>VAT (8%)</dt><dd>{money(tax)}</dd></div><div className="pos-total"><dt>Tổng thanh toán</dt><dd>{money(total)}</dd></div>{customer.id && total > 0 && <div style={{ color: '#059669', fontWeight: 600, fontSize: '12px', paddingTop: '4px' }}><dt>Điểm tích lũy cộng thêm (1.000đ = 1đ)</dt><dd>+{Math.floor(total / Number(loyalty?.earnUnitAmount || 1000)).toLocaleString('vi-VN')} điểm</dd></div>}</dl>
+      <dl className="pos-totals"><div><dt>Tạm tính</dt><dd>{money(subtotal)}</dd></div>{Number(offer?.voucherDiscount)>0 && <div><dt>Voucher {offer.voucherCode}</dt><dd>−{money(offer.voucherDiscount)}</dd></div>}{Number(offer?.pointsDiscount)>0 && <div><dt>Dùng {offer.redeemedPoints} điểm</dt><dd>−{money(offer.pointsDiscount)}</dd></div>}<div><dt>Tiền tính thuế</dt><dd>{money(offer?.taxableAmount ?? Math.max(0, subtotal - discount))}</dd></div><div><dt>VAT (8%)</dt><dd>{money(tax)}</dd></div><div className="pos-total"><dt>Tổng thanh toán</dt><dd>{money(total)}</dd></div>{customer.id && total > 0 && <div style={{ color: '#059669', fontWeight: 600, fontSize: '12px', paddingTop: '4px' }}><dt>Điểm tích lũy cộng thêm (1.000đ = +1 điểm)</dt><dd>+{Math.floor(total / Number(loyalty?.earnUnitAmount || 1000)).toLocaleString('vi-VN')} điểm</dd></div>}</dl>
       <section className="pos-payment" ref={paymentRef} tabIndex={-1} aria-label="Thanh toán">
         <div className="pos-payment-methods">{[['cash', 'payments', 'Tiền mặt'], ['vietqr', 'qr_code_2', 'Chuyển khoản'], ['card', 'credit_card', 'Thẻ']].map(([value, icon, label]) => <button type="button" key={value} aria-pressed={method === value} onClick={() => setMethod(value)}><span className="material-symbols-outlined" aria-hidden="true">{icon}</span>{label}</button>)}</div>
         {method === 'cash' ? (
@@ -60,13 +60,13 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
                   borderRadius: '6px',
                   fontSize: '11px',
                   fontWeight: 600,
-                  border: vietqrMode === 'sepay' ? '1.5px solid #086288' : '1px solid #dce7ee',
+                  border: vietqrMode === 'sepay' ? '1.5px solid #30483b' : '1px solid #dce7ee',
                   background: vietqrMode === 'sepay' ? '#e0f2fe' : '#ffffff',
                   color: vietqrMode === 'sepay' ? '#0369a1' : '#475569',
                   cursor: 'pointer'
                 }}
               >
-                SePay Sandbox (Tự động)
+                VietQR tự động
               </button>
               <button
                 type="button"
@@ -78,7 +78,7 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
                   borderRadius: '6px',
                   fontSize: '11px',
                   fontWeight: 600,
-                  border: vietqrMode === 'manual' ? '1.5px solid #086288' : '1px solid #dce7ee',
+                  border: vietqrMode === 'manual' ? '1.5px solid #30483b' : '1px solid #dce7ee',
                   background: vietqrMode === 'manual' ? '#e0f2fe' : '#ffffff',
                   color: vietqrMode === 'manual' ? '#0369a1' : '#475569',
                   cursor: 'pointer'
@@ -98,9 +98,9 @@ export default function CheckoutPanel({ cart, customer, onCustomer, onGuest, onQ
                 color: '#0369a1',
                 lineHeight: 1.4
               }}>
-                <strong>Cổng SePay VietQR Sandbox</strong>
+                <strong>Thanh toán chuyển khoản VietQR</strong>
                 <p style={{ margin: '3px 0 0', color: '#0c4a6e', fontSize: '11px' }}>
-                  Hệ thống tự động hiển thị mã VietQR và đối soát real-time ngay khi khách chuyển tiền.
+                  Khách quét mã để chuyển khoản. Hệ thống tự động cập nhật khi nhận được xác nhận thanh toán.
                 </p>
               </div>
             ) : (

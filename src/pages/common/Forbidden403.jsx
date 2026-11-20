@@ -68,7 +68,7 @@ export default function Forbidden403({ allowedRoles = [] }) {
               size="large"
               icon={<SafetyCertificateOutlined />}
               onClick={() => navigate('/login')}
-              style={{ borderRadius: 8, borderColor: '#4D8DBA', color: '#086288', fontWeight: 600 }}
+              style={{ borderRadius: 8, borderColor: '#61776a', color: '#30483b', fontWeight: 600 }}
             >
               Đổi Tài Khoản / Đăng Nhập Lại
             </Button>

@@ -70,7 +70,7 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: #086288;
+  background: #30483b;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -158,7 +158,7 @@
 }
 
 .optivision-btn-login-trigger {
-  background: #086288;
+  background: #30483b;
   color: #ffffff;
   border: 1px solid #38bdf8;
   border-radius: 20px;
@@ -280,7 +280,7 @@
 }
 
 .optivision-btn-hero-primary {
-  background: #086288;
+  background: #30483b;
   border: 1px solid #38bdf8;
   color: #ffffff;
   padding: 13px 34px;
@@ -730,7 +730,7 @@
 
 .optivision-staff-input:focus {
   background: #ffffff;
-  border-color: #086288;
+  border-color: #30483b;
   box-shadow: 0 0 0 2px rgba(8, 98, 136, 0.15);
 }
 
@@ -750,7 +750,7 @@
 
 .optivision-staff-select:focus {
   background: #ffffff;
-  border-color: #086288;
+  border-color: #30483b;
 }
 
 /* 6 OTP boxes in Staff Modal */
@@ -831,7 +831,7 @@
 }
 
 .optivision-staff-link:hover {
-  color: #086288;
+  color: #30483b;
 }
 
 /* SSO Divider */

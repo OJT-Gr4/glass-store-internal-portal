@@ -2,10 +2,11 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { message } from 'antd';
 import { ROLES, ROLE_INFO } from '../routes/rolesConfig';
 import { authApi } from '../api/authApi';
+import { sessionBranch } from './sessionBranch';
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = 'optivision_auth_user';
-const DEFAULT_AVATAR_URL = 'https://i.pinimg.com/236x/3e/f1/fc/3ef1fcc3b6cbb97199f961bb0b3ead3f.jpg';
+const DEFAULT_AVATAR_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJAy3MrvYrmubxOdwfv33LI41s2yC06qjU4-qkqMyF4w&s';
 
 function staffProfile(data, token) {
   const roles = Array.isArray(data?.roles) ? data.roles : [];
@@ -15,11 +16,12 @@ function staffProfile(data, token) {
     : roles.includes('ROLE_SALES_STAFF') ? ROLES.POS : null;
   if (!role) throw new Error('Tài khoản không có quyền truy cập cổng nội bộ.');
   const info = ROLE_INFO[role];
+  const workBranch = sessionBranch(token);
   return {
     id: data.id, staffId: data.employeeCode || data.username,
     staffName: data.fullName || data.username, role,
     roleLabel: info.name, roleBadge: info.badgeText,
-    branchName: data.branchName || '',
+    branchCode: workBranch.branchCode, branchName: workBranch.branchName || data.branchName || '',
     avatarUrl: data.avatarUrl || DEFAULT_AVATAR_URL,
     defaultRoute: info.defaultRoute,
     token, loginAt: new Date().toISOString()
@@ -56,7 +58,7 @@ export function AuthProvider({ children }) {
     if (!username || !password) throw new Error('Vui lòng nhập tài khoản và mật khẩu.');
     setUser(null);
     try {
-      const data = await authApi.login({ username, password });
+      const data = await authApi.login({ username, password, branchCode: input.branchCode });
       const profile = staffProfile(data, data.token);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
       setUser(profile);

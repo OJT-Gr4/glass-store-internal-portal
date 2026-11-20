@@ -134,18 +134,18 @@ export default function StockTransferPage() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-[#f9f9ff]">
+    <main className="min-h-screen w-full bg-[#f9f8f4]">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-4 sm:p-6">
-        <header className="flex flex-col justify-between gap-4 rounded-xl border border-[#d8e3fb]/50 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+        <header className="flex flex-col justify-between gap-4 rounded-xl border border-[#dce2d8]/50 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#086288]">Kho vận / Điều chuyển</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#30483b]">Kho vận / Điều chuyển</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">Phiếu điều chuyển kho</h1>
             <p className="mt-1 text-sm text-slate-600">Điều chuyển hai chiều giữa Tổng kho Lab và các chi nhánh được cấp quyền.</p>
           </div>
           <button
             type="button"
             onClick={() => setActiveTab('create')}
-            className="rounded-lg bg-[#086288] px-4 py-2 text-sm font-semibold text-white hover:bg-[#064e6d]"
+            className="rounded-lg bg-[#30483b] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3c594b]"
           >
             Tạo phiếu mới
           </button>
@@ -162,7 +162,7 @@ export default function StockTransferPage() {
             type="button"
             onClick={() => setActiveTab('transfers')}
             aria-pressed={activeTab === 'transfers'}
-            className={`rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'transfers' ? 'bg-white text-[#086288] shadow-sm' : 'text-slate-600'}`}
+            className={`rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'transfers' ? 'bg-white text-[#30483b] shadow-sm' : 'text-slate-600'}`}
           >
             Danh sách phiếu ({transfers.length})
           </button>
@@ -170,7 +170,7 @@ export default function StockTransferPage() {
             type="button"
             onClick={() => setActiveTab('create')}
             aria-pressed={activeTab === 'create'}
-            className={`rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'create' ? 'bg-white text-[#086288] shadow-sm' : 'text-slate-600'}`}
+            className={`rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'create' ? 'bg-white text-[#30483b] shadow-sm' : 'text-slate-600'}`}
           >
             Tạo phiếu
           </button>
@@ -178,14 +178,14 @@ export default function StockTransferPage() {
             type="button"
             onClick={() => setActiveTab('history')}
             aria-pressed={activeTab === 'history'}
-            className={`rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'history' ? 'bg-white text-[#086288] shadow-sm' : 'text-slate-600'}`}
+            className={`rounded-md px-3 py-2 text-sm font-semibold ${activeTab === 'history' ? 'bg-white text-[#30483b] shadow-sm' : 'text-slate-600'}`}
           >
             Lịch sử biến động
           </button>
         </div>
 
         {activeTab === 'transfers' ? (
-          <section className="rounded-xl border border-[#d8e3fb]/50 bg-white p-4 shadow-sm">
+          <section className="rounded-xl border border-[#dce2d8]/50 bg-white p-4 shadow-sm">
             {loading && transfers.length === 0 ? (
               <div role="status" className="py-12 text-center text-sm text-slate-600">Đang tải phiếu điều chuyển…</div>
             ) : error && transfers.length === 0 ? (
@@ -209,7 +209,7 @@ export default function StockTransferPage() {
                   <tbody className="divide-y divide-slate-100">
                     {transfers.map((transfer) => (
                       <tr key={transfer.id}>
-                        <th scope="row" className="whitespace-nowrap px-3 py-3 font-mono text-xs text-[#086288]">{transfer.transferCode}</th>
+                        <th scope="row" className="whitespace-nowrap px-3 py-3 font-mono text-xs text-[#30483b]">{transfer.transferCode}</th>
                         <td className="whitespace-nowrap px-3 py-3">
                           {transfer.sourceLocationName} → {transfer.destinationLocationName}
                         </td>
@@ -241,7 +241,7 @@ export default function StockTransferPage() {
                               type="button"
                               onClick={() => updateTransfer(transfer)}
                               disabled={workingTransferId === transfer.id}
-                              className="rounded-md bg-[#086288] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#064e6d] disabled:opacity-60"
+                              className="rounded-md bg-[#30483b] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#3c594b] disabled:opacity-60"
                             >
                               {workingTransferId === transfer.id
                                 ? 'Đang cập nhật…'
@@ -257,7 +257,7 @@ export default function StockTransferPage() {
             )}
           </section>
         ) : activeTab === 'history' ? (
-          <section className="rounded-xl border border-[#d8e3fb]/50 bg-white p-4 shadow-sm">
+          <section className="rounded-xl border border-[#dce2d8]/50 bg-white p-4 shadow-sm">
             <h2 className="mb-4 text-lg font-bold text-slate-900">Lịch sử biến động kho</h2>
             {loading && movements.length === 0 ? (
               <div role="status" className="py-12 text-center text-sm text-slate-600">Đang tải lịch sử kho…</div>
@@ -304,7 +304,7 @@ export default function StockTransferPage() {
             )}
           </section>
         ) : (
-          <form onSubmit={submitTransfer} className="max-w-3xl space-y-5 rounded-xl border border-[#d8e3fb]/50 bg-white p-5 shadow-sm">
+          <form noValidate onSubmit={submitTransfer} className="max-w-3xl space-y-5 rounded-xl border border-[#dce2d8]/50 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-bold text-slate-900">Tạo phiếu điều chuyển mới</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
@@ -359,7 +359,7 @@ export default function StockTransferPage() {
                 <button
                   type="button"
                   onClick={() => setLines((current) => [...current, emptyLine()])}
-                  className="text-sm font-semibold text-[#086288] hover:underline"
+                  className="text-sm font-semibold text-[#30483b] hover:underline"
                 >
                   Thêm SKU
                 </button>
@@ -439,7 +439,7 @@ export default function StockTransferPage() {
               <button
                 type="submit"
                 disabled={submitting || loading || inventory.length === 0 || locations.length < 2}
-                className="rounded-lg bg-[#086288] px-4 py-2 text-sm font-semibold text-white hover:bg-[#064e6d] disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg bg-[#30483b] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3c594b] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? 'Đang tạo…' : 'Tạo phiếu'}
               </button>

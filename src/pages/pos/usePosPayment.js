@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 import { orderApi } from '../../api/orderApi';
+import { createUuid } from '../../utils/browserSafe';
 
 const IDEMPOTENCY_CONFLICT = 'IDEMPOTENCY_CONFLICT';
 
@@ -76,7 +77,7 @@ export default function usePosPayment({ staffId, branchCode, onRestored, onPaid 
       message.warning('Yêu cầu trước chưa rõ kết quả. Kiểm tra đơn cũ trước khi tạo yêu cầu mới.');
       return;
     }
-    const request = pendingRequest.current || { fingerprint, key: crypto.randomUUID(), payload };
+    const request = pendingRequest.current || { fingerprint, key: createUuid(), payload };
     pendingRequest.current = request;
     await execute(request, true);
   }

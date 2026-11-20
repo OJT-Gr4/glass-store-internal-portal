@@ -1,7 +1,10 @@
 import { apiFetch } from './client';
 
 export const appointmentApi = {
-  getAllAppointments: () => apiFetch('/api/appointments'),
+  getAllAppointments: async () => {
+    const res = await apiFetch('/api/appointments');
+    return Array.isArray(res) ? res : (res?.data || []);
+  },
   getAppointmentById: (id) => apiFetch(`/api/appointments/${id}`),
   createAppointment: (data) => apiFetch('/api/appointments', {
     method: 'POST',

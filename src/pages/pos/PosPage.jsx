@@ -9,7 +9,8 @@ import CheckoutPanel from './CheckoutPanel';
 import './pos.css';
 import { prescriptionApi } from '../../api/prescriptionApi';
 import { customerApi } from '../../api/customerApi';
-import { useOutletContext } from 'react-router-dom';
+import { enrichCustomerLoyalty } from '../../utils/customerLoyalty';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import InventorySyncPanel from './InventorySyncPanel';
 import { inventoryApi } from '../../api/inventoryApi';
 import { promotionApi } from '../../api/promotionApi';
@@ -20,10 +21,12 @@ import usePosPayment from './usePosPayment';
 import CustomerReceptionModal from './CustomerReceptionModal';
 import PosHistoryModal from './PosHistoryModal';
 import PosSepayModal from './PosSepayModal';
+import PosLabOrders from './PosLabOrders';
 import { getPosSellableQuantity, resolvePosBranchCode } from './posInventoryUtils';
 
 export default function PosPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { selectedBranch, locations } = useOutletContext() || {};
   const branchCode = resolvePosBranchCode(selectedBranch);
   const branchName = useMemo(() => {
@@ -86,12 +89,17 @@ export default function PosPage() {
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
   const [dbCustomers, setDbCustomers] = useState([]);
+  const [customersLoading, setCustomersLoading] = useState(false);
 
   useEffect(() => {
-    customerApi.getCustomerList().then(res => {
-      if (Array.isArray(res)) setDbCustomers(res);
-    }).catch(e => console.warn('Sync customer list for POS:', e));
-  }, []);
+    if (!isCustomerModalOpen && dbCustomers.length) return;
+    let active = true;
+    setCustomersLoading(true);
+    customerApi.getCustomerList().then(enrichCustomerLoyalty).then(res => {
+      if (active && Array.isArray(res)) setDbCustomers(res);
+    }).catch(e => console.warn('Sync customer list for POS:', e)).finally(() => { if (active) setCustomersLoading(false); });
+    return () => { active = false; };
+  }, [isCustomerModalOpen]);
 
   const handleSelectCustomer = (c) => {
     if (linkedRx?.customerId && linkedRx.customerId !== c.id) setLinkedRx(null);
@@ -99,7 +107,7 @@ export default function PosPage() {
       id: c.id,
       name: c.fullName,
       phone: c.phoneNumber || '',
-      tier: c.membershipTier || 'Thành Viên',
+      tier: c.tier || 'Chưa tải được hạng',
       points: c.loyaltyPoints || 0,
       pointValue: 0
     });
@@ -196,7 +204,7 @@ export default function PosPage() {
                   price: Number(v.price ?? 0),
                   stockQuantity: getPosSellableQuantity(inventoryBySku.get(v.sku), branchCode),
                   stock: getPosSellableQuantity(inventoryBySku.get(v.sku), branchCode) + ' cái',
-                  image: v.imageUrl || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvIuZeIWL8lzCvG6kGgNUCAlk_ov0naBVuipn8z44eFg&s=10'
+                  image: v.imageUrl || ''
                 });
               });
             }
@@ -552,11 +560,12 @@ export default function PosPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [cart, grandTotal, payTab, cashGiven, customer, discountTotal, user, linkedRx, paymentConfirmed, selectedBranch, branchCode, catalogLoading, catalogProducts, offerReady, offerError, appliedVoucher, pointsToUse, offerKey, checkoutOpen, uncertainPayment]);
 
-  // Filter products by category
+  // Filter products by stock & category
+  const inStockProducts = catalogProducts.filter((p) => p.stockQuantity > 0);
   const categoryProducts =
     selectedCategory === 'ALL'
-      ? catalogProducts
-      : catalogProducts.filter((p) => p.category === selectedCategory);
+      ? inStockProducts
+      : inStockProducts.filter((p) => p.category === selectedCategory);
 
   const query = barcodeInput.trim().toLowerCase();
   const filteredProducts = categoryProducts.filter(p => !query ||
@@ -564,11 +573,13 @@ export default function PosPage() {
 
   return (
     <main className="pos-page">
+      <PosLabOrders />
       {uncertainPayment && <Alert type="warning" showIcon message="Yêu cầu thanh toán trước chưa rõ kết quả" description="Không tạo đơn mới. Thử lại đúng yêu cầu và khóa đã gửi; nếu đã ghi nhận, hệ thống trả đơn cũ. Yêu cầu vẫn được giữ khi tải lại trang."
         action={<button type="button" className="pos-outline" disabled={paying || !canRetryPayment} onClick={retryPayment}>Kiểm tra / thử lại yêu cầu cũ</button>} />}
       <div className="pos-today-tools"><HeldCartsPanel drafts={held.drafts} onHold={holdCart} onRestore={restoreCart} onDelete={id => { try { held.remove(id); } catch(error) { message.error(error.message); } }} disabled={paying || uncertainPayment || catalogLoading} />
         <CancelOrderPanel lastOrder={lastOrder} onChanged={saved => { if (saved.id === lastOrder?.id) setLastOrder(saved); setCatalogVersion(value => value + 1); }} />
         <button type="button" className="pos-outline" onClick={() => setHistoryOpen(true)}>Tra cứu lịch sử POS</button>
+        <button type="button" className="pos-outline" onClick={() => navigate('/reconciliation')}>Đối soát thanh toán</button>
         <button type="button" className="pos-outline" disabled={paying || uncertainPayment || catalogLoading} onClick={() => Modal.confirm({
           title: 'Cập nhật giá và tồn kho?', content: 'Giỏ hàng được giữ nguyên số lượng. Giá sẽ lấy lại từ catalog; hãy kiểm tra tổng tiền mới trước khi thanh toán.',
           okText: 'Cập nhật', cancelText: 'Giữ giá hiện tại', onOk: () => { setOffer(null); setCashGiven(0); setCatalogVersion(value => value + 1); }
@@ -580,7 +591,7 @@ export default function PosPage() {
           <div>
             <span className="pos-branch-bar-title">Chi nhánh bán hàng POS</span>
             <div className="pos-branch-bar-name">
-              <span>{branchName}</span>
+              <span>{branchName || 'Chi nhánh POS'}</span>
               <span className="pos-branch-code-badge">{branchCode}</span>
             </div>
           </div>
@@ -608,7 +619,7 @@ export default function PosPage() {
           message="Chi nhánh này chưa có hàng để bán. Cần tạo phiếu điều chuyển và xác nhận nhận hàng từ kho nguồn."
           style={{ marginBottom: 12 }} />}
       <div className={`pos-workspace${checkoutOpen ? '' : ' is-checkout-collapsed'}`}>
-        <ProductCatalog products={filteredProducts} count={catalogProducts.length} cart={cart}
+        <ProductCatalog products={filteredProducts} count={inStockProducts.length} cart={cart}
           loading={catalogLoading} error={catalogError} category={selectedCategory} setCategory={setSelectedCategory}
           search={barcodeInput} setSearch={setBarcodeInput} searchRef={barcodeRef} onSearch={handleBarcodeSubmit}
           onAdd={handleAddToCart} prescription={linkedRx} onSelectPrescription={() => setIsRxModalOpen(true)} onAddLens={handleInsertRxCombo} />
@@ -637,17 +648,17 @@ export default function PosPage() {
           <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-xl flex flex-col gap-4 border border-slate-100">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#004967] text-[24px]">
+                <span className="material-symbols-outlined text-[#253c33] text-[24px]">
                   assignment_turned_in
                 </span>
-                <h3 className="text-base text-[#111c2d] font-bold">
+                <h3 className="text-base text-[#202924] font-bold">
                   Chọn Toa Khám Khúc Xạ Chờ Lên Đơn
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsRxModalOpen(false)}
-                className="text-[#70787f] hover:text-[#111c2d] transition-colors"
+                className="text-[#70787f] hover:text-[#202924] transition-colors"
               >
                 <span className="material-symbols-outlined text-[24px]">close</span>
               </button>
@@ -667,18 +678,18 @@ export default function PosPage() {
                   <div
                     key={rx.code}
                     onClick={() => handleSelectPrescription(rx)}
-                    className="p-4 rounded-xl bg-[#f0f3ff] hover:bg-[#e7eeff] border border-[#dee8ff]/50 transition-colors cursor-pointer flex flex-col gap-2"
+                    className="p-4 rounded-xl bg-[#f1f2ec] hover:bg-[#eceee7] border border-[#e4e4db]/50 transition-colors cursor-pointer flex flex-col gap-2"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-[#004967] font-bold">
+                      <span className="text-xs text-[#253c33] font-bold">
                         {rx.code} • {rx.customer} ({rx.phone})
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#cae6ff] text-[#001e30] text-[10px] font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-[#dce5d9] text-[#001e30] text-[10px] font-bold">
                         {rx.timeAgo}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-white p-2.5 rounded-lg border border-slate-100 text-[#111c2d]">
+                    <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-white p-2.5 rounded-lg border border-slate-100 text-[#202924]">
                       <div>OD (Mắt phải): {rx.od}</div>
                       <div>OS (Mắt trái): {rx.os}</div>
                     </div>
@@ -691,7 +702,7 @@ export default function PosPage() {
               <button
                 type="button"
                 onClick={() => setIsRxModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-[#f0f3ff] text-[#40484e] text-xs font-bold hover:bg-[#dee8ff] transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#f1f2ec] text-[#40484e] text-xs font-bold hover:bg-[#e4e4db] transition-colors cursor-pointer"
               >
                 Đóng
               </button>
@@ -705,6 +716,7 @@ export default function PosPage() {
         open={isCustomerModalOpen}
         onClose={() => setIsCustomerModalOpen(false)}
         customers={dbCustomers}
+        loading={customersLoading}
         onSelectCustomer={handleSelectCustomer}
         onCustomerCreated={handleCustomerCreated}
       />

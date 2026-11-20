@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { message, Modal, Spin, Select, Input } from 'antd';
+import { Alert, message, Modal, Spin, Select, Input } from 'antd';
+import { DEFAULT_AVATAR_URL } from '../../utils/imageUploadUtils';
 import { customerApi } from '../../api/customerApi';
 import { promotionApi } from '../../api/promotionApi';
+import { prescriptionApi } from '../../api/prescriptionApi';
+import { appointmentApi } from '../../api/appointmentApi';
+import PrescriptionVersions from '../optometry/PrescriptionVersions';
+import {
+  defaultBookingSlot,
+  formatDiopter,
+  sortPrescriptionsAsc,
+  todayIsoVietnam,
+  validateAppointmentBooking,
+  validateCustomerPayload,
+} from './crmUtils';
 
 export default function CrmPage() {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
@@ -16,29 +28,9 @@ export default function CrmPage() {
   const [newNote, setNewNote] = useState({ channel: 'DIRECT', content: '' });
   const [addingNote, setAddingNote] = useState(false);
 
-  // Avatar presets for real seeded customers
-  const AVATARS = [
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuCN6A5Zry9WqS2KKpur9_SXR7FEsNxIv5u70kYDDHcPfSzRI8xZ3BNDMJqGm8H5O-ApKUVZclmL5YPyteetztlhOBmVmDpeCX85t2ltbbOcuntTv1zyjpPMlt3CutGb7_GLwegBHqUFA4EmVKsu-7LadvgLmnk1yp1uM93_PMI56natfovynZGSkxCp9DfQ6JYBBVYfyT2vEqeXSAwoijbAi3SWiRvlEhe0nFGIdTM',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuA7p9c_umMS8JlFzUMDtlfI55LOFh-EgPAVx_fowj68SVdXXGW8oL_cR8h0XnIMj-8xk2bbPQrYRlpD7xeXd1xeKibNIh0ZeBpcnuMdE-TzQG_FSr9J0xFqKqfSj2kOYqdY-FfxLVMgjSheXidJJcc_Yv6WhRxXEv5AEns5AiDkeYja6QKP2qJIXBI406Wc4M_XP-qb8cdAEUXf0345vEYfPRYooS3xQJmB34xtMu8',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuD1A6W3DcNV1YNQnxh4m5zHa-hd_zfP2voqBo4eeuIfzQp6F5sJSr8ecncr8HBMDeH7q7oITPTqQYGFZo2pVcgPEsxvCS1nBz0PX_RFkOmAAhjAdMmgllgyyqHZgHqJeSPwu9fVbIIL_33Smz2TSXt0WOc3MAwKu2XrfW9RVXNx1dExeGdqswNSnYU-zdb-5tHWdZZ5bHL3jGPJ1-S0vMEyKGBEluo1XyNk3N5b_4Q',
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuDxZLxAp7hHJVQ4ycIvGLm-4LR4V3mFbhpd_5UIBgAGKMCZtKQRboA_CyV2j1c496O1v8-KERE-FpD-itrk4t73SLl4xhOssktjAKRma_vW_nQeDRKhfRuG2HQj1iinAmTSqviG-njb4tKyxvA4Kg6Dv46XQHa9rDekAh4H2Th_wVN_-XaxxqfETn8_KPhV0BxznGAksDH6umbXETYoTs35-fEW4itci4Snry30aQ4'
-  ];
-
-  const mapCustomer = (u, idx) => {
-    const code = u.employeeCode || `VIP-0${idx + 1}`;
-    let tierName = 'Thành Viên';
-    let tierClass = 'bg-surface-container text-on-surface';
-
-    if (code.includes('VIP-01')) {
-      tierName = 'VIP 3 Silver';
-      tierClass = 'bg-surface-container-high text-on-surface';
-    } else if (code.includes('VIP-02')) {
-      tierName = 'VIP Gold';
-      tierClass = 'bg-secondary-fixed text-on-secondary-fixed';
-    } else if (code.includes('VIP-03')) {
-      tierName = 'Platinum';
-      tierClass = 'bg-primary-fixed text-on-primary-fixed';
-    }
+  const mapCustomer = (u) => {
+    const tierName = u.tier || 'Thành Viên';
+    const tierClass = resolveTierStyle(tierName);
 
     return {
       dbId: u.id,
@@ -56,14 +48,14 @@ export default function CrmPage() {
       address: u.address || u.branchName || 'TP. Hồ Chí Minh',
       marketingConsent: Boolean(u.marketingConsent),
       marketingConsentUpdatedAt: u.marketingConsentUpdatedAt,
-      avatar: AVATARS[idx % AVATARS.length]
+      avatar: u.avatarUrl?.trim() || DEFAULT_AVATAR_URL
     };
   };
 
   const resolveTierStyle = (tierName) => {
-    if (tierName?.includes('Platinum')) return 'bg-primary-fixed text-on-primary-fixed';
-    if (tierName?.includes('Gold')) return 'bg-secondary-fixed text-on-secondary-fixed';
-    if (tierName?.includes('Silver')) return 'bg-surface-container-high text-on-surface';
+    if (tierName?.includes('Kim Cương') || tierName?.includes('Platinum') || tierName?.includes('Diamond')) return 'bg-primary-fixed text-on-primary-fixed';
+    if (tierName?.includes('Vàng') || tierName?.includes('Gold')) return 'bg-secondary-fixed text-on-secondary-fixed';
+    if (tierName?.includes('Bạc') || tierName?.includes('Silver')) return 'bg-surface-container-high text-on-surface';
     return 'bg-surface-container text-on-surface';
   };
 
@@ -119,6 +111,16 @@ export default function CrmPage() {
   }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [tierFilter, setTierFilter] = useState('ALL'); // 'ALL' | 'Thành Viên' | 'Hạng Vàng' | 'Hạng Kim Cương' | 'CONSENT'
+
+  const displayedCustomers = customerList.filter(c => {
+    if (tierFilter === 'CONSENT') return c.marketingConsent;
+    if (tierFilter === 'Thành Viên') return c.tier === 'Thành Viên' || !c.tier || c.tier === 'STANDARD';
+    if (tierFilter === 'Hạng Bạc') return c.tier?.includes('Bạc') || c.tier?.includes('Silver');
+    if (tierFilter === 'Hạng Vàng') return c.tier?.includes('Vàng') || c.tier?.includes('Gold');
+    if (tierFilter === 'Hạng Kim Cương') return c.tier?.includes('Kim Cương') || c.tier?.includes('Diamond') || c.tier?.includes('Platinum');
+    return true;
+  });
 
   // Handle Search
   const handleSearch = async (val) => {
@@ -145,6 +147,8 @@ export default function CrmPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [createErrors, setCreateErrors] = useState({});
+  const [editErrors, setEditErrors] = useState({});
 
   // Form states
   const [newCustomer, setNewCustomer] = useState({
@@ -169,12 +173,38 @@ export default function CrmPage() {
     marketingConsent: false
   });
 
-  const [bookingFormData, setBookingFormData] = useState({
-    date: '2026-11-05',
-    time: '10:00',
+  // Prescriptions & appointments state
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [prescriptionsLoading, setPrescriptionsLoading] = useState(false);
+  const [prescriptionsError, setPrescriptionsError] = useState('');
+  const [viewingRxId, setViewingRxId] = useState(null);
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState('');
+
+  const [bookingFormData, setBookingFormData] = useState(() => ({
+    ...defaultBookingSlot(),
     room: 'Phòng 01 - Bác Sĩ CKI Khúc Xạ',
     note: 'Tái khám định kỳ 6 tháng & kiểm tra độ loạn'
-  });
+  }));
+
+  const loadPrescriptions = async (customerId) => {
+    if (!customerId) {
+      setPrescriptions([]);
+      setPrescriptionsError('');
+      return;
+    }
+    try {
+      setPrescriptionsLoading(true);
+      setPrescriptionsError('');
+      const data = await prescriptionApi.getByCustomerId(customerId);
+      setPrescriptions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setPrescriptions([]);
+      setPrescriptionsError(err.message || 'Không thể tải lịch sử toa kính.');
+    } finally {
+      setPrescriptionsLoading(false);
+    }
+  };
 
   // Load interactions when activeCustomer or activeTab changes
   const loadInteractions = async (customerId) => {
@@ -191,6 +221,14 @@ export default function CrmPage() {
   };
 
   useEffect(() => {
+    if (!activeCustomer?.dbId) {
+      setPrescriptions([]);
+      return;
+    }
+    loadPrescriptions(activeCustomer.dbId);
+  }, [activeCustomer?.dbId]);
+
+  useEffect(() => {
     if (activeCustomer?.dbId && activeTab === 'notes') {
       loadInteractions(activeCustomer.dbId);
     }
@@ -201,17 +239,33 @@ export default function CrmPage() {
   };
 
   const handleCreateCustomerSubmit = async () => {
-    if (!newCustomer.name.trim() || !newCustomer.phone.trim()) {
-      message.error('Vui lòng nhập họ tên và số điện thoại khách hàng');
+    setCreateErrors({});
+    let validated;
+    try {
+      validated = validateCustomerPayload({
+        fullName: newCustomer.name,
+        phoneNumber: newCustomer.phone,
+        email: newCustomer.email
+      });
+    } catch (valErr) {
+      const msg = valErr.message || 'Dữ liệu không hợp lệ';
+      message.error(msg);
+      if (msg.includes('họ và tên')) {
+        setCreateErrors({ name: msg });
+      } else if (msg.includes('số điện thoại') || msg.includes('Số điện thoại')) {
+        setCreateErrors({ phone: msg });
+      } else if (msg.includes('email') || msg.includes('Email')) {
+        setCreateErrors({ email: msg });
+      }
       return;
     }
 
     try {
       setSubmitting(true);
       const res = await customerApi.createCustomer({
-        fullName: newCustomer.name.trim(),
-        phoneNumber: newCustomer.phone.trim(),
-        email: newCustomer.email ? newCustomer.email.trim() : `${newCustomer.phone.trim()}@customer.optivision.vn`,
+        fullName: validated.fullName,
+        phoneNumber: validated.phoneNumber,
+        email: validated.email || `${validated.phoneNumber}@customer.optivision.vn`,
         address: newCustomer.address ? newCustomer.address.trim() : 'TP. Hồ Chí Minh',
         gender: newCustomer.gender,
         marketingConsent: Boolean(newCustomer.marketingConsent),
@@ -219,6 +273,7 @@ export default function CrmPage() {
       });
 
       setIsCreateModalOpen(false);
+      setCreateErrors({});
       setNewCustomer({ name: '', phone: '', email: '', gender: 'Nam', tier: 'Thành Viên', address: '', marketingConsent: false });
       message.success(`Đã lưu khách hàng mới vào cơ sở dữ liệu: ${res.fullName}!`);
       await loadCustomers();
@@ -232,23 +287,40 @@ export default function CrmPage() {
 
   const handleEditCustomerSubmit = async () => {
     if (!activeCustomer?.dbId) return;
-    if (!editFormData.name.trim() || !editFormData.phone.trim()) {
-      message.error('Vui lòng nhập họ tên và số điện thoại');
+    setEditErrors({});
+    let validated;
+    try {
+      validated = validateCustomerPayload({
+        fullName: editFormData.name,
+        phoneNumber: editFormData.phone,
+        email: editFormData.email
+      });
+    } catch (valErr) {
+      const msg = valErr.message || 'Dữ liệu không hợp lệ';
+      message.error(msg);
+      if (msg.includes('họ và tên')) {
+        setEditErrors({ name: msg });
+      } else if (msg.includes('số điện thoại') || msg.includes('Số điện thoại')) {
+        setEditErrors({ phone: msg });
+      } else if (msg.includes('email') || msg.includes('Email')) {
+        setEditErrors({ email: msg });
+      }
       return;
     }
 
     try {
       setSubmitting(true);
       const res = await customerApi.updateCustomer(activeCustomer.dbId, {
-        fullName: editFormData.name.trim(),
-        phoneNumber: editFormData.phone.trim(),
-        email: editFormData.email ? editFormData.email.trim() : '',
+        fullName: validated.fullName,
+        phoneNumber: validated.phoneNumber,
+        email: validated.email || '',
         address: editFormData.address ? editFormData.address.trim() : '',
         gender: editFormData.gender,
         marketingConsent: Boolean(editFormData.marketingConsent)
       });
 
       setIsEditModalOpen(false);
+      setEditErrors({});
       message.success(`Đã cập nhật thông tin khách hàng ${res.fullName} thành công!`);
       await loadCustomers();
     } catch (err) {
@@ -281,17 +353,50 @@ export default function CrmPage() {
     }
   };
 
-  const handleBookingSubmit = () => {
-    setIsBookingModalOpen(false);
-    message.success(`Đã lên lịch khám thành công cho ${(activeCustomer?.name || 'Khách Hàng')} vào lúc ${bookingFormData.time} ngày ${bookingFormData.date}!`);
+  const openBookingModal = () => {
+    setBookingError('');
+    setBookingFormData(prev => ({
+      ...prev,
+      ...defaultBookingSlot(),
+    }));
+    setIsBookingModalOpen(true);
+  };
+
+  const handleBookingSubmit = async () => {
+    if (!activeCustomer?.dbId || bookingSubmitting) return;
+    setBookingError('');
+    try {
+      const { scheduledTime } = validateAppointmentBooking({
+        date: bookingFormData.date,
+        time: bookingFormData.time,
+      });
+      setBookingSubmitting(true);
+      const res = await appointmentApi.createAppointment({
+        customerId: activeCustomer.dbId,
+        customerPhone: activeCustomer.phone || '',
+        scheduledTime,
+        roomName: bookingFormData.room?.trim() || null,
+        ticketType: 'ONLINE',
+        notes: bookingFormData.note?.trim() || '',
+      });
+      const savedTicket = res?.data?.ticketCode ? ` (${res.data.ticketCode})` : '';
+      setIsBookingModalOpen(false);
+      message.success(`Đã lên lịch khám thành công${savedTicket} cho ${activeCustomer.name} vào lúc ${bookingFormData.time} ngày ${bookingFormData.date}!`);
+    } catch (err) {
+      const msg = err.message || 'Không thể đặt lịch khám. Vui lòng kiểm tra lại ngày giờ.';
+      setBookingError(msg);
+      message.error(msg);
+    } finally {
+      setBookingSubmitting(false);
+    }
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#f9f9ff]">
+    <div className="w-full min-h-screen bg-[#f9f8f4]">
       <div className="max-w-[1600px] mx-auto p-3.5 sm:p-5 flex flex-col gap-3.5">
 
         {/* 1. TOP HEADER & CRM ACTIONS */}
-        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 bg-surface-container-lowest p-3.5 rounded-xl shadow-xs border border-[#d8e3fb]/40">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 bg-surface-container-lowest p-3.5 rounded-xl shadow-xs border border-[#dce2d8]/40">
           <div className="flex flex-col gap-1">
             <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 font-label-md text-body-sm text-outline">
               <span>KHÁCH HÀNG CRM</span>
@@ -318,7 +423,7 @@ export default function CrmPage() {
               <span>Tạo Khách Mới</span>
               <span className="px-1.5 py-0.2 rounded bg-on-primary/20 text-on-primary font-label-mono text-[10px]">F1</span>
             </button>
-            <button onClick={() => setIsBookingModalOpen(true)} className="px-3 py-1.5 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high font-label-lg text-label-lg flex items-center gap-1.5 transition-all cursor-pointer">
+            <button onClick={openBookingModal} className="px-3 py-1.5 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high font-label-lg text-label-lg flex items-center gap-1.5 transition-all cursor-pointer">
               <span className="material-symbols-outlined text-[16px] text-primary">event</span>
               <span>Đặt Lịch Đo</span>
               <span className="px-1.5 py-0.2 rounded bg-surface-container-highest font-label-mono text-[10px]">F2</span>
@@ -340,7 +445,7 @@ export default function CrmPage() {
 
         {/* 2. 4 COMPACT CRM KPI METRICS */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <div>
                 <span className="font-label-md text-label-md uppercase tracking-wider text-outline block">Tổng Khách Hàng CRM</span>
@@ -353,13 +458,13 @@ export default function CrmPage() {
                 <span className="material-symbols-outlined text-[18px]">people</span>
               </div>
             </div>
-            <div className="mt-2 pt-2 border-t border-[#e7eeff] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
+            <div className="mt-2 pt-2 border-t border-[#eceee7] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
               <span className="material-symbols-outlined text-emerald-600 text-[14px]">check_circle</span>
               <span className="truncate text-outline text-[11px]">Dữ liệu khách hàng thực tế</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <div>
                 <span className="font-label-md text-label-md uppercase tracking-wider text-outline block">Đã Đồng Ý Tiếp Thị</span>
@@ -374,13 +479,13 @@ export default function CrmPage() {
                 <span className="material-symbols-outlined text-[18px]">campaign</span>
               </div>
             </div>
-            <div className="mt-2 pt-2 border-t border-[#e7eeff] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
+            <div className="mt-2 pt-2 border-t border-[#eceee7] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
               <span className="material-symbols-outlined text-outline text-[14px]">verified_user</span>
               <span className="truncate text-outline text-[11px]">Đồng ý nhận tin khuyến mãi</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <div>
                 <span className="font-label-md text-label-md uppercase tracking-wider text-outline block">Ghi Chú Chăm Sóc</span>
@@ -393,13 +498,13 @@ export default function CrmPage() {
                 <span className="material-symbols-outlined text-[18px]">support_agent</span>
               </div>
             </div>
-            <div className="mt-2 pt-2 border-t border-[#e7eeff] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
+            <div className="mt-2 pt-2 border-t border-[#eceee7] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
               <span className="material-symbols-outlined text-outline text-[14px]">phone_in_talk</span>
               <span className="truncate text-outline text-[11px]">Lịch sử tương tác thực tế</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col justify-between">
+          <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <div>
                 <span className="font-label-md text-label-md uppercase tracking-wider text-outline block">Chất Lượng CSAT / NPS</span>
@@ -412,7 +517,7 @@ export default function CrmPage() {
                 <span className="material-symbols-outlined text-[18px]">sentiment_very_satisfied</span>
               </div>
             </div>
-            <div className="mt-2 pt-2 border-t border-[#e7eeff] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
+            <div className="mt-2 pt-2 border-t border-[#eceee7] flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
               <span className="material-symbols-outlined text-outline text-[14px]">info</span>
               <span className="truncate text-outline text-[11px]">Hồ sơ khách hàng chuẩn hóa</span>
             </div>
@@ -426,7 +531,7 @@ export default function CrmPage() {
           <div className="col-span-12 xl:col-span-4 flex flex-col gap-2.5">
 
             {/* Search and Tag filter */}
-            <div className="p-3 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col gap-2">
+            <div className="p-3 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col gap-2">
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
                 <input
@@ -439,10 +544,64 @@ export default function CrmPage() {
               </div>
 
               <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap pb-0.5 text-label-md font-label-md">
-                <button className="px-2.5 py-1 rounded-full bg-primary text-on-primary shrink-0 transition-colors cursor-pointer text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setTierFilter('ALL')}
+                  className={`px-2.5 py-1 rounded-full shrink-0 transition-colors cursor-pointer text-xs font-semibold ${
+                    tierFilter === 'ALL'
+                      ? 'bg-primary text-on-primary'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
                   Tất cả ({customerList.length})
                 </button>
-                <button className="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high shrink-0 transition-colors cursor-pointer text-xs">
+                <button
+                  type="button"
+                  onClick={() => setTierFilter('Thành Viên')}
+                  className={`px-2.5 py-1 rounded-full shrink-0 transition-colors cursor-pointer text-xs font-semibold ${
+                    tierFilter === 'Thành Viên'
+                      ? 'bg-[#253c33] text-white'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
+                  Thành Viên ({customerList.filter(c => c.tier === 'Thành Viên' || !c.tier || c.tier === 'STANDARD').length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTierFilter('Hạng Bạc')}
+                  className={`px-2.5 py-1 rounded-full shrink-0 transition-colors cursor-pointer text-xs font-semibold ${tierFilter === 'Hạng Bạc' ? 'bg-slate-600 text-white' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'}`}
+                >Hạng Bạc ({customerList.filter(c => c.tier?.includes('Bạc') || c.tier?.includes('Silver')).length})</button>
+                <button
+                  type="button"
+                  onClick={() => setTierFilter('Hạng Vàng')}
+                  className={`px-2.5 py-1 rounded-full shrink-0 transition-colors cursor-pointer text-xs font-semibold ${
+                    tierFilter === 'Hạng Vàng'
+                      ? 'bg-amber-500 text-slate-900'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
+                  Hạng Vàng ({customerList.filter(c => c.tier?.includes('Vàng') || c.tier?.includes('Gold')).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTierFilter('Hạng Kim Cương')}
+                  className={`px-2.5 py-1 rounded-full shrink-0 transition-colors cursor-pointer text-xs font-semibold ${
+                    tierFilter === 'Hạng Kim Cương'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
+                  Kim Cương ({customerList.filter(c => c.tier?.includes('Kim Cương') || c.tier?.includes('Diamond') || c.tier?.includes('Platinum')).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTierFilter('CONSENT')}
+                  className={`px-2.5 py-1 rounded-full shrink-0 transition-colors cursor-pointer text-xs font-semibold ${
+                    tierFilter === 'CONSENT'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
                   Nhận tin tiếp thị ({customerList.filter(c => c.marketingConsent).length})
                 </button>
               </div>
@@ -452,13 +611,13 @@ export default function CrmPage() {
             <div className="flex flex-col gap-2 max-h-[720px] overflow-y-auto pr-0.5">
               {loading ? (
                 <div className="p-8 text-center"><Spin /></div>
-              ) : customerList.length === 0 ? (
-                <div className="p-8 text-center bg-surface-container-lowest rounded-xl border border-dashed border-[#d8e3fb]">
+              ) : displayedCustomers.length === 0 ? (
+                <div className="p-8 text-center bg-surface-container-lowest rounded-xl border border-dashed border-[#dce2d8]">
                   <span className="material-symbols-outlined text-3xl text-slate-300 mb-1">person_search</span>
                   <p className="text-xs text-outline font-medium">Không tìm thấy khách hàng nào</p>
                 </div>
               ) : (
-                customerList.map((item) => {
+                displayedCustomers.map((item) => {
                   const isSelected = selectedCustomerId === item.id;
                   return (
                     <div
@@ -478,14 +637,14 @@ export default function CrmPage() {
                       className={`p-3 rounded-xl transition-all cursor-pointer relative border ${
                         isSelected
                           ? 'bg-surface-container-lowest border-primary/30 shadow-sm ring-1 ring-primary/20'
-                          : 'bg-surface-container-lowest border-[#d8e3fb]/40 hover:border-primary/20 hover:shadow-xs'
+                          : 'bg-surface-container-lowest border-[#dce2d8]/40 hover:border-primary/20 hover:shadow-xs'
                       }`}
                     >
                       {isSelected && <div className="absolute top-0 left-0 bottom-0 w-1 bg-primary rounded-l-xl"></div>}
                       <div className="flex items-start justify-between pl-1">
                         <div className="flex items-center gap-2.5">
                           <div className="relative">
-                            <img className="w-9 h-9 rounded-xl object-cover shadow-xs" alt={item.name} src={item.avatar} />
+                            <img className="w-9 h-9 rounded-xl object-cover shadow-xs" alt={item.name} src={item.avatar} onError={e => { if (e.currentTarget.src !== DEFAULT_AVATAR_URL) e.currentTarget.src = DEFAULT_AVATAR_URL; }} />
                             {isSelected && <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-primary text-on-primary text-[8px] flex items-center justify-center font-bold">✓</span>}
                           </div>
                           <div>
@@ -541,7 +700,7 @@ export default function CrmPage() {
 
           {/* Right Column (8/12): Customer 360 Full Profile */}
           {!activeCustomer ? (
-            <div className="col-span-12 xl:col-span-8 p-12 text-center bg-surface-container-lowest rounded-xl border border-dashed border-[#d8e3fb] flex flex-col items-center justify-center">
+            <div className="col-span-12 xl:col-span-8 p-12 text-center bg-surface-container-lowest rounded-xl border border-dashed border-[#dce2d8] flex flex-col items-center justify-center">
               <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">contacts</span>
               <h3 className="font-title-md text-on-surface font-semibold">Chưa có hồ sơ khách hàng</h3>
               <p className="text-xs text-outline max-w-sm mt-1">Bấm "Tạo Khách Mới" để thêm hồ sơ khách hàng vào cơ sở dữ liệu.</p>
@@ -550,13 +709,14 @@ export default function CrmPage() {
             <div className="col-span-12 xl:col-span-8 flex flex-col gap-3.5">
 
               {/* Profile Overview Card */}
-              <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col gap-3 relative overflow-hidden">
+              <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col gap-3 relative overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <img
                       className="w-14 h-14 rounded-2xl object-cover shadow-sm shrink-0"
                       alt={activeCustomer.name}
                       src={activeCustomer.avatar}
+                      onError={e => { if (e.currentTarget.src !== DEFAULT_AVATAR_URL) e.currentTarget.src = DEFAULT_AVATAR_URL; }}
                     />
                     <div className="space-y-0.5">
                       <div className="flex flex-wrap items-center gap-2">
@@ -656,7 +816,7 @@ export default function CrmPage() {
               </div>
 
               {/* Profile Tabs */}
-              <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-[#d8e3fb]/40 overflow-x-auto whitespace-nowrap">
+              <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-[#dce2d8]/40 overflow-x-auto whitespace-nowrap">
                 {[
                   { id: 'rx', label: 'Hồ Sơ Thị Lực & Biểu Đồ OD/OS', icon: 'biotech' },
                   { id: 'notes', label: `Nhật Ký Chăm Sóc CRM (${interactions.length})`, icon: 'support_agent' }
@@ -679,7 +839,7 @@ export default function CrmPage() {
               {/* Tab Content: Rx vs Notes */}
               {activeTab === 'notes' ? (
                 /* 4. S3-04: Customer Interaction History & Staff Notes */
-                <div className="p-4 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col gap-4">
+                <div className="p-4 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col gap-4">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                     <div>
                       <h4 className="font-title-md text-title-md text-on-surface font-semibold m-0">Lịch Sử Chăm Sóc &amp; Tương Tác Khách Hàng</h4>
@@ -733,7 +893,7 @@ export default function CrmPage() {
                   {interactionsLoading ? (
                     <div className="py-8 text-center"><Spin /></div>
                   ) : interactions.length === 0 ? (
-                    <div className="py-8 text-center text-outline bg-surface-container-low rounded-xl border border-dashed border-[#d8e3fb]">
+                    <div className="py-8 text-center text-outline bg-surface-container-low rounded-xl border border-dashed border-[#dce2d8]">
                       <span className="material-symbols-outlined text-3xl text-slate-300 block mb-1">chat</span>
                       <span className="text-xs font-medium text-on-surface">Chưa có lịch sử chăm sóc nào</span>
                       <p className="text-[11px] text-outline mt-0.5">Sử dụng form trên để thêm cuộc gọi hoặc ghi chú tư vấn cho khách hàng này.</p>
@@ -762,22 +922,104 @@ export default function CrmPage() {
               ) : (
                 /* Tab Content: Rx Progression Chart & Table */
                 <>
-                  <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col gap-2.5">
+                  <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col gap-2.5">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                       <div>
                         <span className="font-title-md text-title-md text-on-surface font-semibold block">Tiến Triển Độ Cận &amp; Loạn Thị (Diopter Progression Curve)</span>
                         <span className="font-body-sm text-body-sm text-outline">Dữ liệu khúc xạ OD &amp; OS chuẩn ISO 13666</span>
                       </div>
+                      <button
+                        onClick={() => loadPrescriptions(activeCustomer.dbId)}
+                        disabled={prescriptionsLoading}
+                        className="px-2.5 py-1 text-xs rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">refresh</span>
+                        Tải lại
+                      </button>
                     </div>
 
-                    <div className="py-8 text-center text-outline bg-surface-container-low rounded-xl border border-dashed border-[#d8e3fb]">
-                      <span className="material-symbols-outlined text-3xl text-slate-300 block mb-1">show_chart</span>
-                      <span className="text-xs font-medium text-on-surface">Chưa có lịch sử biến thiên độ khúc xạ</span>
-                      <p className="text-[11px] text-outline mt-0.5">Biểu đồ tiến triển sẽ được tự động vẽ khi khách hàng thực hiện đo khám định kỳ tại hệ thống.</p>
-                    </div>
+                    {prescriptionsLoading ? (
+                      <div className="py-8 text-center"><Spin /></div>
+                    ) : prescriptionsError ? (
+                      <Alert
+                        type="error"
+                        showIcon
+                        message={prescriptionsError}
+                        action={<button className="text-xs font-semibold text-primary underline cursor-pointer" onClick={() => loadPrescriptions(activeCustomer.dbId)}>Thử lại</button>}
+                      />
+                    ) : prescriptions.length === 0 ? (
+                      <div className="py-8 text-center text-outline bg-surface-container-low rounded-xl border border-dashed border-[#dce2d8]">
+                        <span className="material-symbols-outlined text-3xl text-slate-300 block mb-1">show_chart</span>
+                        <span className="text-xs font-medium text-on-surface">Chưa có lịch sử biến thiên độ khúc xạ</span>
+                        <p className="text-[11px] text-outline mt-0.5">Biểu đồ tiến triển sẽ được tự động vẽ khi khách hàng thực hiện đo khám định kỳ tại hệ thống.</p>
+                      </div>
+                    ) : (() => {
+                      const ordered = sortPrescriptionsAsc(prescriptions);
+                      const latest = ordered[ordered.length - 1];
+                      const values = ordered.flatMap(r => [Number(r.odSph), Number(r.osSph)]).filter(Number.isFinite);
+                      const minVal = Math.min(...values, -1);
+                      const maxVal = Math.max(...values, 0);
+                      const span = Math.max(maxVal - minVal, 1);
+                      const w = 520;
+                      const h = 150;
+                      const padX = 34;
+                      const padY = 18;
+                      const xAt = idx => ordered.length === 1 ? w / 2 : padX + (idx / (ordered.length - 1)) * (w - padX * 2);
+                      const yAt = val => padY + ((maxVal - val) / span) * (h - padY * 2);
+                      const odPts = ordered.map((r, i) => `${xAt(i)},${yAt(Number(r.odSph || 0))}`).join(' ');
+                      const osPts = ordered.map((r, i) => `${xAt(i)},${yAt(Number(r.osSph || 0))}`).join(' ');
+                      return (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                            <div className="p-2.5 rounded-xl bg-sky-50/70 border border-sky-200/70">
+                              <span className="text-[11px] text-sky-800 font-semibold block">Mắt phải (OD) gần nhất</span>
+                              <span className="font-mono font-bold text-sm text-[#253c33]">
+                                SPH {formatDiopter(latest.odSph)} / CYL {formatDiopter(latest.odCyl)}
+                              </span>
+                            </div>
+                            <div className="p-2.5 rounded-xl bg-teal-50/70 border border-teal-200/70">
+                              <span className="text-[11px] text-teal-800 font-semibold block">Mắt trái (OS) gần nhất</span>
+                              <span className="font-mono font-bold text-sm text-teal-800">
+                                SPH {formatDiopter(latest.osSph)} / CYL {formatDiopter(latest.osCyl)}
+                              </span>
+                            </div>
+                            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                              <span className="text-[11px] text-slate-600 font-semibold block">Tổng PD · Số lần đo</span>
+                              <span className="font-mono font-bold text-sm text-slate-900">
+                                {latest.pd ?? '—'} mm · {ordered.length} toa
+                              </span>
+                            </div>
+                          </div>
+                          <div className="p-3 rounded-xl bg-surface-container-low border border-[#dce2d8]/60">
+                            <div className="flex items-center gap-4 text-[11px] font-semibold mb-1.5">
+                              <span className="inline-flex items-center gap-1.5 text-[#253c33]"><span className="w-2.5 h-2.5 rounded-full bg-[#253c33]"></span>OD SPH</span>
+                              <span className="inline-flex items-center gap-1.5 text-teal-700"><span className="w-2.5 h-2.5 rounded-full bg-teal-600"></span>OS SPH</span>
+                            </div>
+                            <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-36 overflow-visible" aria-label="Biểu đồ tiến triển độ khúc xạ OD/OS">
+                              <line x1={padX} y1={padY} x2={w - padX} y2={padY} stroke="#cbd5e1" strokeDasharray="3 3" />
+                              <line x1={padX} y1={h / 2} x2={w - padX} y2={h / 2} stroke="#cbd5e1" strokeDasharray="3 3" />
+                              <line x1={padX} y1={h - padY} x2={w - padX} y2={h - padY} stroke="#cbd5e1" strokeDasharray="3 3" />
+                              <text x="4" y={padY + 4} fontSize="10" fill="#64748b">{formatDiopter(maxVal)}</text>
+                              <text x="4" y={h - padY + 4} fontSize="10" fill="#64748b">{formatDiopter(minVal)}</text>
+                              {ordered.length > 1 && <polyline fill="none" stroke="#253c33" strokeWidth="2.5" points={odPts} />}
+                              {ordered.length > 1 && <polyline fill="none" stroke="#0d9488" strokeWidth="2.5" points={osPts} />}
+                              {ordered.map((r, i) => (
+                                <g key={r.id}>
+                                  <circle cx={xAt(i)} cy={yAt(Number(r.odSph || 0))} r="4.5" fill="#253c33" />
+                                  <circle cx={xAt(i)} cy={yAt(Number(r.osSph || 0))} r="4.5" fill="#0d9488" />
+                                  <text x={xAt(i)} y={h - 2} textAnchor="middle" fontSize="9.5" fill="#475569">
+                                    #{r.id}
+                                  </text>
+                                </g>
+                              ))}
+                            </svg>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
-                  <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#d8e3fb]/40 flex flex-col gap-2.5">
+                  <div className="p-3.5 rounded-xl bg-surface-container-lowest shadow-xs border border-[#dce2d8]/40 flex flex-col gap-2.5">
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="font-title-md text-title-md text-on-surface font-semibold block">Lịch Sử Toa Kính &amp; Hồ Sơ Lâm Sàng</span>
@@ -791,7 +1033,7 @@ export default function CrmPage() {
                       </div>
                     </div>
 
-                    <div className="overflow-x-auto rounded-xl border border-[#d8e3fb]/40">
+                    <div className="overflow-x-auto rounded-xl border border-[#dce2d8]/40">
                       <table className="w-full text-left font-body-md text-body-md">
                         <thead className="bg-surface-container-low text-outline font-label-md text-label-md uppercase">
                           <tr>
@@ -804,13 +1046,52 @@ export default function CrmPage() {
                             <th className="py-2.5 px-3 text-right">Thao Tác</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#d8e3fb]/30 text-on-surface">
-                          <tr>
-                            <td colSpan={7} className="py-8 text-center text-[#70787f]">
-                              <span className="material-symbols-outlined text-2xl text-slate-300 block mb-1">visibility</span>
-                              Chưa có lịch sử toa kính nào được lưu trong hồ sơ của khách hàng này
-                            </td>
-                          </tr>
+                        <tbody className="divide-y divide-[#dce2d8]/30 text-on-surface text-xs">
+                          {prescriptionsLoading ? (
+                            <tr>
+                              <td colSpan={7} className="py-8 text-center"><Spin /></td>
+                            </tr>
+                          ) : prescriptions.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="py-8 text-center text-[#70787f]">
+                                <span className="material-symbols-outlined text-2xl text-slate-300 block mb-1">visibility</span>
+                                Chưa có lịch sử toa kính nào được lưu trong hồ sơ của khách hàng này
+                              </td>
+                            </tr>
+                          ) : (
+                            prescriptions.map((rx) => (
+                              <tr key={rx.id} className="hover:bg-slate-50/70">
+                                <td className="py-2.5 px-3">
+                                  <div className="font-mono font-bold text-[#253c33]">#{rx.id} · v{rx.version ?? 0}</div>
+                                  <div className="text-[11px] text-outline">
+                                    {rx.createdAt ? new Date(rx.createdAt).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                                  </div>
+                                </td>
+                                <td className="py-2.5 px-3 font-medium">{rx.optometristName || 'Chuyên viên khúc xạ'}</td>
+                                <td className="py-2.5 px-3 font-mono">
+                                  <div>SPH {formatDiopter(rx.odSph)} / CYL {formatDiopter(rx.odCyl)}</div>
+                                  <div className="text-[11px] text-outline">AXIS {rx.odAxis ?? '—'}° · ADD {formatDiopter(rx.odAdd)}</div>
+                                </td>
+                                <td className="py-2.5 px-3 font-mono">
+                                  <div>SPH {formatDiopter(rx.osSph)} / CYL {formatDiopter(rx.osCyl)}</div>
+                                  <div className="text-[11px] text-outline">AXIS {rx.osAxis ?? '—'}° · ADD {formatDiopter(rx.osAdd)}</div>
+                                </td>
+                                <td className="py-2.5 px-2 font-mono font-semibold">{rx.pd != null ? `${rx.pd} mm` : '—'}</td>
+                                <td className="py-2.5 px-3">
+                                  <div className="font-medium text-slate-800">{rx.lensName || rx.lensSku || 'Chưa chỉ định'}</div>
+                                  {rx.notes && <div className="text-[11px] text-outline truncate max-w-[200px]" title={rx.notes}>{rx.notes}</div>}
+                                </td>
+                                <td className="py-2.5 px-3 text-right">
+                                  <button
+                                    onClick={() => setViewingRxId(rx.id)}
+                                    className="px-2.5 py-1 rounded-lg bg-surface-container text-primary hover:bg-secondary-fixed font-semibold text-xs cursor-pointer"
+                                  >
+                                    Phiên bản
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -836,22 +1117,38 @@ export default function CrmPage() {
               <label className="font-semibold text-slate-700 block mb-1">Họ và tên <span className="text-red-500">*</span></label>
               <input
                 type="text"
-                className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-primary"
+                className={`w-full p-2 border rounded-lg outline-none transition ${
+                  createErrors.name ? 'border-red-500 bg-red-50/15 focus:border-red-500' : 'border-slate-300 focus:border-primary'
+                }`}
                 placeholder="Nhập họ tên đầy đủ..."
                 value={newCustomer.name}
-                onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                onChange={(e) => {
+                  setNewCustomer({ ...newCustomer, name: e.target.value });
+                  if (createErrors.name) setCreateErrors(prev => ({ ...prev, name: '' }));
+                }}
               />
+              {createErrors.name && (
+                <span className="text-red-500 text-[11px] block mt-0.5 font-medium">{createErrors.name}</span>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Số điện thoại <span className="text-red-500">*</span></label>
                 <input
                   type="tel"
-                  className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-primary"
+                  className={`w-full p-2 border rounded-lg outline-none transition ${
+                    createErrors.phone ? 'border-red-500 bg-red-50/15 focus:border-red-500' : 'border-slate-300 focus:border-primary'
+                  }`}
                   placeholder="0901234567"
                   value={newCustomer.phone}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                  onChange={(e) => {
+                    setNewCustomer({ ...newCustomer, phone: e.target.value });
+                    if (createErrors.phone) setCreateErrors(prev => ({ ...prev, phone: '' }));
+                  }}
                 />
+                {createErrors.phone && (
+                  <span className="text-red-500 text-[11px] block mt-0.5 font-medium">{createErrors.phone}</span>
+                )}
               </div>
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Giới tính</label>
@@ -870,11 +1167,19 @@ export default function CrmPage() {
               <label className="font-semibold text-slate-700 block mb-1">Email</label>
               <input
                 type="email"
-                className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-primary"
+                className={`w-full p-2 border rounded-lg outline-none transition ${
+                  createErrors.email ? 'border-red-500 bg-red-50/15 focus:border-red-500' : 'border-slate-300 focus:border-primary'
+                }`}
                 placeholder="email@example.com"
                 value={newCustomer.email}
-                onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                onChange={(e) => {
+                  setNewCustomer({ ...newCustomer, email: e.target.value });
+                  if (createErrors.email) setCreateErrors(prev => ({ ...prev, email: '' }));
+                }}
               />
+              {createErrors.email && (
+                <span className="text-red-500 text-[11px] block mt-0.5 font-medium">{createErrors.email}</span>
+              )}
             </div>
             <div>
               <label className="font-semibold text-slate-700 block mb-1">Địa chỉ chi tiết</label>
@@ -919,20 +1224,36 @@ export default function CrmPage() {
               <label className="font-semibold text-slate-700 block mb-1">Họ và tên <span className="text-red-500">*</span></label>
               <input
                 type="text"
-                className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-primary"
+                className={`w-full p-2 border rounded-lg outline-none transition ${
+                  editErrors.name ? 'border-red-500 bg-red-50/15 focus:border-red-500' : 'border-slate-300 focus:border-primary'
+                }`}
                 value={editFormData.name}
-                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                onChange={(e) => {
+                  setEditFormData({ ...editFormData, name: e.target.value });
+                  if (editErrors.name) setEditErrors(prev => ({ ...prev, name: '' }));
+                }}
               />
+              {editErrors.name && (
+                <span className="text-red-500 text-[11px] block mt-0.5 font-medium">{editErrors.name}</span>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Số điện thoại <span className="text-red-500">*</span></label>
                 <input
                   type="tel"
-                  className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-primary"
+                  className={`w-full p-2 border rounded-lg outline-none transition ${
+                    editErrors.phone ? 'border-red-500 bg-red-50/15 focus:border-red-500' : 'border-slate-300 focus:border-primary'
+                  }`}
                   value={editFormData.phone}
-                  onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                  onChange={(e) => {
+                    setEditFormData({ ...editFormData, phone: e.target.value });
+                    if (editErrors.phone) setEditErrors(prev => ({ ...prev, phone: '' }));
+                  }}
                 />
+                {editErrors.phone && (
+                  <span className="text-red-500 text-[11px] block mt-0.5 font-medium">{editErrors.phone}</span>
+                )}
               </div>
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Giới tính</label>
@@ -951,10 +1272,18 @@ export default function CrmPage() {
               <label className="font-semibold text-slate-700 block mb-1">Email</label>
               <input
                 type="email"
-                className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-primary"
+                className={`w-full p-2 border rounded-lg outline-none transition ${
+                  editErrors.email ? 'border-red-500 bg-red-50/15 focus:border-red-500' : 'border-slate-300 focus:border-primary'
+                }`}
                 value={editFormData.email}
-                onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                onChange={(e) => {
+                  setEditFormData({ ...editFormData, email: e.target.value });
+                  if (editErrors.email) setEditErrors(prev => ({ ...prev, email: '' }));
+                }}
               />
+              {editErrors.email && (
+                <span className="text-red-500 text-[11px] block mt-0.5 font-medium">{editErrors.email}</span>
+              )}
             </div>
             <div>
               <label className="font-semibold text-slate-700 block mb-1">Địa chỉ chi tiết</label>
@@ -988,29 +1317,35 @@ export default function CrmPage() {
           title={<span className="font-bold text-base text-slate-900">Đặt Lịch Khám Khúc Xạ Mới</span>}
           open={isBookingModalOpen}
           onOk={handleBookingSubmit}
-          onCancel={() => setIsBookingModalOpen(false)}
+          onCancel={() => { if (!bookingSubmitting) { setIsBookingModalOpen(false); setBookingError(''); } }}
+          confirmLoading={bookingSubmitting}
+          cancelButtonProps={{ disabled: bookingSubmitting }}
+          closable={!bookingSubmitting}
+          maskClosable={!bookingSubmitting}
           okText="Xác Nhận Lịch Hẹn"
           cancelText="Hủy Bỏ"
         >
           <div className="space-y-3 pt-2 text-xs">
             <p className="text-slate-600 m-0">Đặt lịch khám cho khách hàng: <strong className="text-slate-900">{activeCustomer?.name}</strong> ({activeCustomer?.phone})</p>
+            {bookingError && <Alert type="error" showIcon message={bookingError} />}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Ngày khám</label>
+                <label className="font-semibold text-slate-700 block mb-1">Ngày khám <span className="text-red-500">*</span></label>
                 <input
                   type="date"
+                  min={todayIsoVietnam()}
                   className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-primary"
                   value={bookingFormData.date}
-                  onChange={(e) => setBookingFormData({ ...bookingFormData, date: e.target.value })}
+                  onChange={(e) => { setBookingError(''); setBookingFormData({ ...bookingFormData, date: e.target.value }); }}
                 />
               </div>
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Giờ khám</label>
+                <label className="font-semibold text-slate-700 block mb-1">Giờ khám <span className="text-red-500">*</span></label>
                 <input
                   type="time"
                   className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-primary"
                   value={bookingFormData.time}
-                  onChange={(e) => setBookingFormData({ ...bookingFormData, time: e.target.value })}
+                  onChange={(e) => { setBookingError(''); setBookingFormData({ ...bookingFormData, time: e.target.value }); }}
                 />
               </div>
             </div>
@@ -1034,6 +1369,10 @@ export default function CrmPage() {
             </div>
           </div>
         </Modal>
+
+        {viewingRxId != null && (
+          <PrescriptionVersions prescriptionId={viewingRxId} onClose={() => setViewingRxId(null)} />
+        )}
 
       </div>
     </div>

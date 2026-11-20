@@ -163,7 +163,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
       content: (
         <div>
           <p>Hồ sơ của <strong>{regName}</strong> ({regStaffId}) đã chuyển tới IT Security và Trưởng ca chi nhánh.</p>
-          <p style={{ color: '#086288', fontWeight: 600 }}>Bạn có thể đăng nhập ngay bằng mã demo có sẵn để bắt đầu ca.</p>
+          <p style={{ color: '#30483b', fontWeight: 600 }}>Bạn có thể đăng nhập ngay bằng mã demo có sẵn để bắt đầu ca.</p>
         </div>
       ),
       onOk: () => setMode('login')
@@ -309,7 +309,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 <p>Hệ thống quản lý tác nghiệp chuỗi kính mắt OptiVision</p>
               </div>
 
-              <form onSubmit={handleLoginSubmit}>
+              <form noValidate onSubmit={handleLoginSubmit}>
                 {/* Branch Selection */}
                 <div className="optivision-staff-field">
                   <div className="optivision-staff-field-label-row">
@@ -427,7 +427,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 <p>Đăng ký tài khoản tác nghiệp chuỗi kính mắt OptiVision</p>
               </div>
 
-              <form onSubmit={handleRegisterSubmit}>
+              <form noValidate onSubmit={handleRegisterSubmit}>
                 <div className="optivision-staff-field">
                   <div className="optivision-staff-field-label-row">
                     <span>Họ và tên nhân sự</span>
